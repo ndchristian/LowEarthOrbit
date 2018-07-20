@@ -1,0 +1,26 @@
+
+# PyPi stuff
+*.py[co]
+*.DS_Store
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+var
+sdist
+develop-eggs
+.installed.cfg
+README.txt
+
+# IDEA IDE
+.idea*
+src/
+
+
+#VirtualEnv
+venv
+
+
