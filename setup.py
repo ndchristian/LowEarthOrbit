@@ -8,5 +8,11 @@ setup(
     packages=['lowearthorbit'],
     license='LICENSE.txt',
     description='A better way to deploy AWS Cloudformation',
-    long_description=open('README.txt').read()
+    long_description=open('README.txt').read(),
+    install_requires=['Click',
+                      ],
+    entry_points='''
+    [console_scripts]
+    leo=leo:cli
+    '''
 )
