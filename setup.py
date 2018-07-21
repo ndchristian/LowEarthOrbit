@@ -10,7 +10,8 @@ setup(
     description='A better way to deploy AWS Cloudformation',
     long_description=open('README.txt').read(),
     install_requires=['Click',
-                      'boto3',
+                      'botocore',
+                      'boto3'
                       ],
     entry_points='''
     [console_scripts]
