@@ -41,7 +41,7 @@ Configurable Options
 ----------------------------
 
 | Variable      | Option        | Description  |
-| ------------- |:-------------:| -----:|
+| :------------- |:-------------:| :-----:|
 | profile       | --profile     | Profile in your credentials file to be used to communicate with AWS |
 | region        | --region      | Which AWS region to execute in |
 
