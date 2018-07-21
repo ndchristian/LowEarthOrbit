@@ -15,5 +15,9 @@ def plan():
     click.echo("plan")
 
 @cli.command()
+def upload():
+    click.echo("upload")
+
+@cli.command()
 def validate():
     click.echo("validate")
