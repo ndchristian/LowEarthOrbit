@@ -2,3 +2,8 @@
 README.txt
 setup.py
 lowearthorbit/__init__.py
+lowearthorbit/delete.py
+lowearthorbit/deploy.py
+lowearthorbit/plan.py
+lowearthorbit/upload.py
+lowearthorbit/validate.py
