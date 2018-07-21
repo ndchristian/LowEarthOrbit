@@ -1,6 +1,8 @@
 import boto3
 import click
 
+from lowearthorbit.validate import validate_templates
+
 
 class Config(object):
     def __init__(self):
@@ -47,5 +49,17 @@ def upload():
 
 
 @cli.command()
-def validate():
-    click.echo("validate")
+@click.option('--bucket', type=click.STRING, required=True,
+              help="S3 bucket that has the CloudFormation templates.")
+@click.option('--prefix', type=click.STRING, default='',
+              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@pass_config
+def validate(config, bucket, prefix):
+    validation_errors = validate_templates(session=config.session,
+                                           bucket=bucket,
+                                           prefix=prefix)
+
+    if validation_errors:
+        click.echo("Following errors occured when validating templates:")
+        for error in validation_errors:
+            click.echo(error)
