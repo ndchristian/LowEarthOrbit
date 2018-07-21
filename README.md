@@ -36,3 +36,12 @@ However, the recommended way is to install [aws-cli](https://github.com/aws/aws-
 
 More about [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html).
 
+----------------------------
+Configurable Options
+----------------------------
+
+| Variable      | Option        | Description  |
+| ------------- |:-------------:| -----:|
+| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS |
+| region        | --region      | Which AWS region to execute in |
+
