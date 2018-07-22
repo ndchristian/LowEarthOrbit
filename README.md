@@ -69,3 +69,9 @@ Validates all files with the file extensions: .json, .template, .txt, yaml, or y
 | prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | False    | String |
 
 ----------------------------
+Examples:
+----------------------------
+
+Switching to a different profile while validating templates:
+
+`leo --profile PROFILE validate --bucket BUCKET `
