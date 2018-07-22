@@ -7,9 +7,9 @@ setup(
     author_email='ndchristian@gmail.com',
     packages=['lowearthorbit'],
     license='LICENSE.txt',
-    description='A better way to deploy AWS Cloudformation',
+    description='A better way to deploy AWS CloudFormation',
     long_description=open('README.txt').read(),
-    install_requires=['Click',
+    install_requires=['click',
                       'botocore',
                       'boto3'
                       ],
