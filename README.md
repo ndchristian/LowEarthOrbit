@@ -45,3 +45,21 @@ Configurable Options
 | profile       | --profile     | Profile in your credentials file to be used to communicate with AWS |
 | region        | --region      | Which AWS region to execute in |
 
+----------------------------
+Commands:
+----------------------------
+
+###validate
+
+####Description:
+
+Validates all files with the file extensions: ".json", ".template", ".txt", "yaml", or "yml" for CloudFormation in the specified bucket.
+
+###Options:
+
+| Variable      | Option        | Description                                            | Required |
+| :-------------|:-------------:| :-----:                                                | :-----: |
+| bucket        | --bucket      | S3 bucket that has the CloudFormation templates.| true |
+| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | false |
+
+----------------------------
