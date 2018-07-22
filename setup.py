@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='LowEarthOrbit',
-    version='0.2dev',
+    version='0.3dev',
     author='Nicholas Christian',
     author_email='ndchristian@gmail.com',
     packages=['lowearthorbit'],
