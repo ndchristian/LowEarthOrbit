@@ -46,10 +46,10 @@ More about [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/develop
 Configurable Options
 ----------------------------
 
-| Variable      | Option        | Description  |
-| :------------- |:-------------:| :-----:|
-| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS |
-| region        | --region      | Which AWS region to execute in |
+| Variable      | Option        | Description  | Type |
+| :------------- |:-------------:| :-----: |  :-----:|
+| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS | String |
+| region        | --region      | Which AWS region to execute in | String |
 
 ----------------------------
 Commands:
@@ -63,9 +63,9 @@ Validates all files with the file extensions: ".json", ".template", ".txt", "yam
 
 ###Options:
 
-| Variable      | Option        | Description                                            | Required |
-| :-------------|:-------------:| :-----:                                                | :-----: |
-| bucket        | --bucket      | S3 bucket that has the CloudFormation templates.| true |
-| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | false |
+| Variable      | Option        | Description                                            | Required | Type |
+| :-------------|:-------------:| :-----:                                                | :-----: | :-----: |
+| bucket        | --bucket      | S3 bucket that has the CloudFormation templates.| true | String |
+| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | false | String |
 
 ----------------------------
