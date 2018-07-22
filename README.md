@@ -55,6 +55,21 @@ Configurable Options
 Commands:
 ----------------------------
 
+### upload
+
+#### Description:
+
+Uploads all files in the given local path with the file extensions: .json, .template, .txt, yaml, or yml into S3 for CloudFormation.
+
+### Options:
+
+| Variable      | Option        | Description                                                                      | Required | Type   |
+| :-------------|:-------------:| :---------------------------------------------------------------------:          | :-----:  | :----: |
+| bucket        | --bucket      | S3 bucket that the CloudFormation templates will be uploaded to                  | True     | String |
+| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates will be uploaded to | False    | String |
+| localpath     | --localpath   | Local path where CloudFormation templates are located                            | True     | String |
+----------------------------
+
 ### validate
 
 #### Description:
@@ -71,6 +86,10 @@ Validates all files with the file extensions: .json, .template, .txt, yaml, or y
 ----------------------------
 Examples:
 ----------------------------
+
+Uploading templates to S3:
+
+`leo upload --bucket BUCKET --prefix Templates --localpath ~/Templates`
 
 Switching to a different profile while validating templates:
 
