@@ -1,6 +1,12 @@
 # low-earth-orbit (leo)
 
 ------------
+About
+------------
+
+Leo is a better, faster way to depoy AWS CloudFormation templates.
+
+------------
 Installation
 ------------
 
