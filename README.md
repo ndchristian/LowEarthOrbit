@@ -59,7 +59,7 @@ Commands:
 
 #### Description:
 
-Validates all files with the file extensions: ".json", ".template", ".txt", "yaml", or "yml" for CloudFormation in the specified bucket.
+Validates all files with the file extensions: .json, .template, .txt, yaml, or yml for CloudFormation in the specified bucket.
 
 ### Options:
 
