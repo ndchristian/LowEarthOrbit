@@ -1,6 +1,7 @@
 import boto3
 import click
 
+from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
 
 
@@ -44,8 +45,18 @@ def plan():
 
 
 @cli.command()
-def upload():
-    click.echo("upload")
+@click.option('--bucket', type=click.STRING, required=True,
+              help="S3 bucket that the CloudFormation templates will be uploaded to.")
+@click.option('--prefix', type=click.STRING, default='',
+              help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
+@click.option('--localpath', type=click.Path(exists=True), required=True,
+              help='Local path where CloudFormation templates are located.')
+@pass_config
+def upload(config, bucket, prefix, localpath):
+    upload_templates(Bucket=bucket,
+                     Prefix=prefix,
+                     Session=config.session,
+                     LocalPath=localpath)
 
 
 @cli.command()
