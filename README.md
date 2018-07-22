@@ -46,10 +46,10 @@ More about [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/develop
 Configurable Options
 ----------------------------
 
-| Variable      | Option        | Description  | Type |
-| :------------- |:-------------:| :-----: |  :-----:|
-| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS | String |
-| region        | --region      | Which AWS region to execute in | String |
+| Variable      | Option        | Description                                                         | Required  | Type   |
+| :-------------|:------------: | :-----------------------------------------------------------------: | :--------:| :-----:|
+| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS | False     | String |
+| region        | --region      | Which AWS region to execute in                                      | False     |String  |
 
 ----------------------------
 Commands:
@@ -63,9 +63,9 @@ Validates all files with the file extensions: ".json", ".template", ".txt", "yam
 
 ###Options:
 
-| Variable      | Option        | Description                                            | Required | Type |
-| :-------------|:-------------:| :-----:                                                | :-----: | :-----: |
-| bucket        | --bucket      | S3 bucket that has the CloudFormation templates.| true | String |
-| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | false | String |
+| Variable      | Option        | Description                                                              | Required | Type   |
+| :-------------|:-------------:| :---------------------------------------------------------------------:  | :-----:  | :----: |
+| bucket        | --bucket      | S3 bucket that has the CloudFormation templates                          | True     | String |
+| prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | False    | String |
 
 ----------------------------
