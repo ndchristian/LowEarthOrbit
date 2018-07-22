@@ -55,13 +55,13 @@ Configurable Options
 Commands:
 ----------------------------
 
-###validate
+### validate
 
-####Description:
+#### Description:
 
 Validates all files with the file extensions: ".json", ".template", ".txt", "yaml", or "yml" for CloudFormation in the specified bucket.
 
-###Options:
+### Options:
 
 | Variable      | Option        | Description                                                              | Required | Type   |
 | :-------------|:-------------:| :---------------------------------------------------------------------:  | :-----:  | :----: |
