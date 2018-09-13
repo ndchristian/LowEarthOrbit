@@ -1,6 +1,7 @@
 import boto3
 import click
 
+from lowearthorbit.deploy import deploy_templates
 from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
 
@@ -35,8 +36,28 @@ def delete():
 
 
 @cli.command()
-def deploy():
-    click.echo("deploy")
+@click.option('--bucket', type=click.STRING, required=True,
+              help="S3 bucket that has the CloudFormation templates.")
+@click.option('--prefix', type=click.STRING, default='',
+              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option('--gated', type=click.BOOL, default=False,
+              help='Checks with user before deploying an update')
+@click.option('--job-identifier', type=click.STRING, required=True,
+              help='Prefix that is added on to the deployed stack names')
+@click.option('--parameters', type=click.STRING, default=[],
+              help='All parameters that are needed to deploy with. '
+                   'Can either be from a JSON file or typed JSON that must be in quotes')
+@click.option('--tags', type=click.STRING, default=[],
+              help='Tags added to all deployed stacks')
+@pass_config
+def deploy(config, bucket, prefix, gated, job_identifier, parameters, tags):
+    deploy_templates(session=config.session,
+                     bucket=bucket,
+                     gated=gated,
+                     job_identifier=job_identifier,
+                     parameters=parameters,
+                     prefix=prefix,
+                     tags=tags)
 
 
 @cli.command()

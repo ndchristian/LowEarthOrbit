@@ -55,6 +55,25 @@ Configurable Options
 Commands:
 ----------------------------
 
+### deploy
+
+#### Description:
+
+Creates or updates CloudFormation stacks.
+
+
+### Options:
+
+| Variable      | Option          | Description                                                                                                               | Required | Type      |
+| :-------------|:-------------:  | :---------------------------------------------------------------------:                                                   | :-----:  | :----:  |
+| bucket           | --bucket           | S3 bucket that the CloudFormation templates will be deployed from                                                   | True     | String  |
+| prefix           | --prefix           | Prefix or bucket subdirectory where CloudFormation templates will be deployed from                                  | False    | String  |
+| gated            | --gated            | Checks with user before deploying an update                                                                         | False    | Boolean |
+| job-identifier   | --job-identifier   | Prefix that is added on to the deployed stack names                                                                 | True     | String  |
+| parameters       | --parameters       | All parameters that are needed to deploy with. Can either be from a JSON file or typed JSON that must be in quotes  | False    | String  |
+| tags             | --tags             | Tags added to all deployed stacks. Must be JSON that's in quotes                                                    | True     | String  |
+----------------------------
+
 ### upload
 
 #### Description:

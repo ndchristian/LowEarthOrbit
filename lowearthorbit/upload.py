@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import os
 
+import click
+
 
 def upload_templates(Bucket, Prefix, Session, LocalPath):
     """Uploads files with the standard CloudFormation file extentions to the specific bucket in """
@@ -15,4 +17,4 @@ def upload_templates(Bucket, Prefix, Session, LocalPath):
                                   Bucket, "{}/{}".format(Prefix, file_object))
             s3_client.get_waiter('object_exists').wait(Bucket=Bucket,
                                                        Key="{}/{}".format(Prefix, file_object))
-            print('Uploaded {0:s} to {1:s}/{2:s}\n'.format(file_object, Bucket, Prefix), end='')
+            click.echo('Uploaded {0:s} to {1:s}/{2:s}\n'.format(file_object, Bucket, Prefix))
