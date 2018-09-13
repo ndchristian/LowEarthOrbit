@@ -71,7 +71,31 @@ Creates or updates CloudFormation stacks.
 | gated            | --gated            | Checks with user before deploying an update                                                                         | False    | Boolean |
 | job-identifier   | --job-identifier   | Prefix that is added on to the deployed stack names                                                                 | True     | String  |
 | parameters       | --parameters       | All parameters that are needed to deploy with. Can either be from a JSON file or typed JSON that must be in quotes  | False    | String  |
-| tags             | --tags             | Tags added to all deployed stacks. Must be JSON that's in quotes                                                    | True     | String  |
+| tags             | --tags             | Tags added to all deployed stacks. Must be JSON that's in quotes                                                    | False     | String  |
+
+Parameters JSON syntax:
+
+```[
+  {
+    "ParameterKey": "string",
+    "ParameterValue": "string",
+    "UsePreviousValue": true|false,
+    "ResolvedValue": "string"
+  }
+  ...
+] 
+```
+Tags JSON syntax:
+```
+[
+  {
+    "Key": "string",
+    "Value": "string"
+  }
+  ...
+]
+```
+
 ----------------------------
 
 ### upload
@@ -105,6 +129,9 @@ Validates all files with the file extensions: .json, .template, .txt, yaml, or y
 ----------------------------
 Examples:
 ----------------------------
+
+Deploying:
+`leo deploy --bucket BUCKET --job-identifier JOB_IDENTIFIER --gated True --parameters {"ParameterKey: "key", ParameterValue: "value"}`
 
 Uploading templates to S3:
 
