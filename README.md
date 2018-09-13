@@ -131,7 +131,7 @@ Examples:
 ----------------------------
 
 Deploying:
-`leo deploy --bucket BUCKET --job-identifier JOB_IDENTIFIER --gated True --parameters {"ParameterKey: "key", ParameterValue: "value"}`
+`leo deploy --bucket BUCKET --job-identifier JOB_IDENTIFIER --gated True --parameters '{"ParameterKey: "key", ParameterValue: "value"}'`
 
 Uploading templates to S3:
 
