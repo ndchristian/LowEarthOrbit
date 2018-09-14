@@ -55,6 +55,19 @@ Configurable Options
 Commands:
 ----------------------------
 
+### delete
+
+#### Description:
+
+Uploads all files in the given local path with the file extensions: .json, .template, .txt, yaml, or yml into S3 for CloudFormation.
+
+### Options:
+
+| Variable          | Option           | Description                        | Required | Type   |
+| :-----------------|:----------------:| :-------------------------------:  | :-----:  | :----: |
+| job-identifier    | --job-identifier | Identifies which stacks to delete  | True     | String |
+
+
 ### deploy
 
 #### Description:

@@ -4,6 +4,7 @@ import click
 from lowearthorbit.deploy import deploy_templates
 from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
+from lowearthorbit.delete import delete_stacks
 
 
 class Config(object):
@@ -31,8 +32,12 @@ def cli(config, profile, region):
 
 
 @cli.command()
-def delete():
-    click.echo("delete")
+@click.option('--job-identifier', type=click.STRING, required=True,
+              help='Prefix that is used to identify stacks to delete')
+@pass_config
+def delete(config,job_identifier):
+    delete_stacks(session=config.session,job_identifier=job_identifier)
+
 
 
 @cli.command()
