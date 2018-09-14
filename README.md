@@ -46,10 +46,14 @@ More about [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/develop
 Configurable Options
 ----------------------------
 
-| Variable      | Option        | Description                                                         | Required  | Type   |
-| :-------------|:------------: | :-----------------------------------------------------------------: | :--------:| :-----:|
-| profile       | --profile     | Profile in your credentials file to be used to communicate with AWS | False     | String |
-| region        | --region      | Which AWS region to execute in                                      | False     |String  |
+| Variable                 | Option                     | Description                                                                  | Required  | Type   |
+| :-------------:          |:------------:              | :-----------------------------------------------------------------:          | :--------:| :-----:|
+| aws-access-key-id        | --aws-access-key-id        | AWS access key ID                                                            | False     | String |
+| aws-secret-access-key-id | --aws-secret-access-key-id | AWS secret access key                                                        | False     | String |
+| aws_session_token        | --aws-session-token        | AWS temporary session token                                                  | False     | String |
+| botocore-session         | --botocore-session         | AWS Use this Botocore session instead of creating a new default one          | False     | String |
+| profile                  | --profile                  | The name of a profile to use. If not given, then the default profile is used | False     | String |
+| region                   | --region                   | Region when creating new connections                                         | False     | String |
 
 ----------------------------
 Commands:
