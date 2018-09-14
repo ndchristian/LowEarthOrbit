@@ -1,10 +1,10 @@
 import boto3
 import click
 
+from lowearthorbit.delete import delete_stacks
 from lowearthorbit.deploy import deploy_templates
 from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
-from lowearthorbit.delete import delete_stacks
 
 
 class Config(object):
@@ -16,13 +16,29 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 
 
 @click.group()
-@click.option('--profile', default=None,
-              help='Profile in your credentials file to be used to communicate with AWS.')
-@click.option('--region', default=None,
-              help='Which AWS region to execute in.')
+@click.option('--aws-access-key-id', type=click.STRING, default=None,
+              help='AWS access key ID')
+@click.option('--aws-secret-access-key', type=click.STRING, default=None,
+              help='AWS secret access key')
+@click.option('--aws_session_token', type=click.STRING, default=None,
+              help='AWS temporary session token')
+@click.option('--botocore-session', type=click.STRING, default=None,
+              help='Use this Botocore session instead of creating a new default one')
+@click.option('--profile', type=click.STRING, default=None,
+              help='The name of a profile to use. If not given, then the default profile is used')
+@click.option('--region', type=click.STRING, default=None,
+              help='Region when creating new connections')
 @pass_config
-def cli(config, profile, region):
+def cli(config, aws_access_key_id, aws_secret_access_key_id, aws_session_token, botocore_session, profile, region):
     session_arguments = {}
+    if aws_access_key_id is not None:
+        session_arguments.update({'aws_access_key_id': aws_access_key_id})
+    if aws_secret_access_key_id is not None:
+        session_arguments.update({'aws_secret_access_key_id': aws_secret_access_key_id})
+    if aws_session_token is not None:
+        session_arguments.update({'aws_session_token': aws_session_token})
+    if botocore_session is not None:
+        session_arguments.update({'botocore_session': botocore_session})
     if profile is not None:
         session_arguments.update({'profile_name': profile})
     if region is not None:
@@ -35,9 +51,8 @@ def cli(config, profile, region):
 @click.option('--job-identifier', type=click.STRING, required=True,
               help='Prefix that is used to identify stacks to delete')
 @pass_config
-def delete(config,job_identifier):
-    delete_stacks(session=config.session,job_identifier=job_identifier)
-
+def delete(config, job_identifier):
+    delete_stacks(session=config.session, job_identifier=job_identifier)
 
 
 @cli.command()
