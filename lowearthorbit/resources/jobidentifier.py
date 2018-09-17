@@ -9,3 +9,5 @@ def check(JobIdentifier):
 
     if not JobIdentifier.isalnum():
         sys.exit("The job identifier must be alpha-numeric.")
+
+    return JobIdentifier
