@@ -91,8 +91,6 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
                  s3_client, session):
     """Creates the stack and handles rollback conditions"""
 
-    stack_counter = 0
-
     stack_name = get_stackname(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
@@ -122,25 +120,24 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
         try:
             cfn_client.get_waiter('stack_create_complete').wait(StackName=current_stack['StackId'])
             click.echo("Created {}.".format(stack_name))
-            stack_counter += 1
+
+            return {'StackName': stack_name}
         except botocore.exceptions.WaiterError:
             click.echo("\n{} is currently rolling back.".format(stack_name))
-            resourcefailures = [{'LogicalResourceId': event['LogicalResourceId'],
+            resource_failures = [{'LogicalResourceId': event['LogicalResourceId'],
                                  'ResourceStatusReason': event['ResourceStatusReason']} for event in
                                 cfn_client.describe_stack_events(StackName=current_stack['StackId'])['StackEvents']
                                 if event['ResourceStatus'] == 'CREATE_FAILED']
 
-            if resourcefailures:
-                for failures in resourcefailures:
+            if resource_failures:
+                for failures in resource_failures:
                     click.echo("%s has failed to be created because: '%s'" % (
                         failures['LogicalResourceId'], failures['ResourceStatusReason']))
             else:
                 click.echo("Please check console for why some resources failed to create.")
+
             sys.exit()
 
-            click.echo("{} has been deleted.".format(stack['StackName']))
-
-        sys.exit("All stacks have been deleted.")
 
     except botocore.exceptions.ClientError as e:
         raise e

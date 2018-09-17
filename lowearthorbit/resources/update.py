@@ -186,6 +186,7 @@ def update_stack(update_stack_name, template_url, key_object, tags, gated, sessi
         if not gated:
             apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
                           update_stack_name=update_stack_name, past_failures=past_failures)
+            return {'StackName': update_stack_name}
         else:
             click.echo("Would you like to execute these changes?")
             while True:
@@ -193,7 +194,8 @@ def update_stack(update_stack_name, template_url, key_object, tags, gated, sessi
                 if execute_changes.lower() in ('yes', 'ya', 'y', 'yea', 'yup', 'yeah'):
                     apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
                                   update_stack_name=update_stack_name, past_failures=past_failures)
-                    break
+
+                    return {'StackName': update_stack_name}
 
                 if execute_changes.lower() in ('no', 'na', 'n', 'nah', 'nope'):
                     click.echo("Moving on from executing {}".format(change_set_name))

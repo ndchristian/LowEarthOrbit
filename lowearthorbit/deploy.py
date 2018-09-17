@@ -45,7 +45,7 @@ def deploy_templates(session, bucket, prefix, job_identifier,parameters, gated, 
                                 cfn_client=cfn_client)
 
             if check['Update']:
-                update_stack(update_stack_name=check['UpdateStackName'],
+                stack = update_stack(update_stack_name=check['UpdateStackName'],
                              template_url=template_url,
                              session=session,
                              key_object=object['Key'],
@@ -55,11 +55,11 @@ def deploy_templates(session, bucket, prefix, job_identifier,parameters, gated, 
                              tags=tags,
                              gated=gated)
 
-                stack_archive.append({'StackName': stack_name})
+                stack_archive.append({'StackName': stack['StackName']})
 
 
             else:
-                create_stack(template_url=template_url,
+                stack = create_stack(template_url=template_url,
                              template_details=template_summary,
                              parameters=parameters,
                              bucket=bucket,
@@ -70,6 +70,8 @@ def deploy_templates(session, bucket, prefix, job_identifier,parameters, gated, 
                              tags=tags,
                              job_identifier=job_identifier)
 
-                stack_archive.append({'StackName': stack_name})
+                stack_archive.append({'StackName': stack['StackName']})
+
+
 
             stack_counter += 1
