@@ -88,11 +88,11 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
 
 
 def create_stack(key_object, template_url, template_details, bucket, job_identifier, parameters, tags, cfn_client,
-                 s3_client, session):
+                 s3_client):
     """Creates the stack and handles rollback conditions"""
 
     stack_name = get_stackname(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
-    stack_capabilities = get_capabilities(template_url=template_url, session=session)
+    stack_capabilities = get_capabilities(template_url=template_url, cfn_client=cfn_client)
 
     stack_parameters = gather_parameters(cfn_client=cfn_client, s3_client=s3_client,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
