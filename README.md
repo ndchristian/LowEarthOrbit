@@ -144,16 +144,8 @@ Validates all files with the file extensions: .json, .template, .txt, yaml, or y
 | prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | False    | String |
 
 ----------------------------
+
 Examples:
 ----------------------------
 
-Deploying:
-`leo deploy --bucket BUCKET --job-identifier JOB_IDENTIFIER --gated True --parameters '{"ParameterKey: "key", ParameterValue: "value"}'`
-
-Uploading templates to S3:
-
-`leo upload --bucket BUCKET --prefix Templates --localpath ~/Templates`
-
-Switching to a different profile while validating templates:
-
-`leo --profile PROFILE validate --bucket BUCKET `
+Examples can be found in the example folder
