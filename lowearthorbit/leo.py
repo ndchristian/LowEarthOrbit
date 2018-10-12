@@ -33,15 +33,17 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
               help='The name of a profile to use. If not given, then the default profile is used')
 @click.option('--region', type=click.STRING, default=None,
               help='Region when creating new connections')
+@click.option('--debug', is_flag=True,
+              help='Shows debug output')
 @pass_config
-def cli(config, aws_access_key_id, aws_secret_access_key_id, aws_session_token, botocore_session, profile, region):
+def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, botocore_session, profile, region, debug):
     """Creates the connection to AWS with the specified session arguments"""
     try:
         session_arguments = {}
         if aws_access_key_id is not None:
             session_arguments.update({'aws_access_key_id': aws_access_key_id})
-        if aws_secret_access_key_id is not None:
-            session_arguments.update({'aws_secret_access_key_id': aws_secret_access_key_id})
+        if aws_secret_access_key is not None:
+            session_arguments.update({'aws_secret_access_key': aws_secret_access_key})
         if aws_session_token is not None:
             session_arguments.update({'aws_session_token': aws_session_token})
         if botocore_session is not None:
@@ -50,6 +52,8 @@ def cli(config, aws_access_key_id, aws_secret_access_key_id, aws_session_token, 
             session_arguments.update({'profile_name': profile})
         if region is not None:
             session_arguments.update({'region_name': region})
+        if debug:
+            log.setLevel(logging.DEBUG)
 
         log.debug('Passing session arguments')
         config.session = boto3.session.Session(**session_arguments)
