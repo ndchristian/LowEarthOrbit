@@ -34,14 +34,14 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 @click.option('--region', type=click.STRING, default=None,
               help='Region when creating new connections')
 @pass_config
-def cli(config, aws_access_key_id, aws_secret_access_key_id, aws_session_token, botocore_session, profile, region):
+def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, botocore_session, profile, region):
     """Creates the connection to AWS with the specified session arguments"""
     try:
         session_arguments = {}
         if aws_access_key_id is not None:
             session_arguments.update({'aws_access_key_id': aws_access_key_id})
-        if aws_secret_access_key_id is not None:
-            session_arguments.update({'aws_secret_access_key_id': aws_secret_access_key_id})
+        if aws_secret_access_key is not None:
+            session_arguments.update({'aws_secret_access_key': aws_secret_access_key})
         if aws_session_token is not None:
             session_arguments.update({'aws_session_token': aws_session_token})
         if botocore_session is not None:
