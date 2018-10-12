@@ -1,9 +1,15 @@
+import logging
+
 from lowearthorbit.resources.create import create_stack
 from lowearthorbit.resources.update import update_stack
+
+log = logging.getLogger(__name__)
 
 
 def deploy_type(stack_name, cfn_client):
     """Checks if the CloudFormation stack should be created or updated"""
+
+    log.debug('Gathering deploy type')
 
     for stack in cfn_client.describe_stacks()['Stacks']:
         cfn_stack_name = stack['StackName'].split('-')
@@ -18,8 +24,10 @@ def deploy_type(stack_name, cfn_client):
     return {'Update': False}
 
 
-def deploy_templates(session, bucket, prefix, job_identifier,parameters, gated, tags):
+def deploy_templates(session, bucket, prefix, job_identifier, parameters, gated, tags):
     """Creates or updates CloudFormation stacks"""
+
+    log.debug('Deploying templates')
 
     s3_client = session.client('s3')
     cfn_client = session.client('cloudformation')
@@ -45,33 +53,39 @@ def deploy_templates(session, bucket, prefix, job_identifier,parameters, gated, 
                                 cfn_client=cfn_client)
 
             if check['Update']:
-                stack = update_stack(update_stack_name=check['UpdateStackName'],
-                             template_url=template_url,
-                             session=session,
-                             key_object=object['Key'],
-                             bucket=bucket,
-                             job_identifier=job_identifier,
-                             parameters=parameters,
-                             tags=tags,
-                             gated=gated)
+                try:
+                    stack = exit(update_stack(update_stack_name=check['UpdateStackName'],
+                                              template_url=template_url,
+                                              session=session,
+                                              key_object=object['Key'],
+                                              bucket=bucket,
+                                              job_identifier=job_identifier,
+                                              parameters=parameters,
+                                              tags=tags,
+                                              gated=gated))
 
-                stack_archive.append({'StackName': stack['StackName']})
+                    stack_archive.append({'StackName': stack['StackName']})
+                except Exception as e:
+                    log.exception('Error: %s', e)
+                    exit(1)
+
 
 
             else:
-                stack = create_stack(template_url=template_url,
-                             template_details=template_summary,
-                             parameters=parameters,
-                             bucket=bucket,
-                             session=session,
-                             cfn_client=cfn_client,
-                             s3_client=s3_client,
-                             key_object=object['Key'],
-                             tags=tags,
-                             job_identifier=job_identifier)
+                try:
+                    stack = create_stack(template_url=template_url,
+                                         template_details=template_summary,
+                                         parameters=parameters,
+                                         bucket=bucket,
+                                         cfn_client=cfn_client,
+                                         s3_client=s3_client,
+                                         key_object=object['Key'],
+                                         tags=tags,
+                                         job_identifier=job_identifier)
 
-                stack_archive.append({'StackName': stack['StackName']})
-
-
+                    stack_archive.append({'StackName': stack['StackName']})
+                except Exception as e:
+                    log.exception('Error: %s', e)
+                    exit(1)
 
             stack_counter += 1

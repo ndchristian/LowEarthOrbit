@@ -1,12 +1,14 @@
 import json
+import logging
 import sys
 import time
 
 import botocore
-import click
 
 from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.parameters import gather as gather_parameters
+
+log = logging.getLogger(__name__)
 
 STACK_LIST = []
 
@@ -28,6 +30,8 @@ def get_stackname(job_identifier, obj):
             stackname_list.append(s)
     stackname = "".join(stackname_list)
 
+    log.debug('Created stackname: %s' % stackname)
+
     return stackname
 
 
@@ -35,7 +39,7 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
     """Handles templates that transform, such as templates that are using SAM."""
 
     # Gathering capabilities is a bit wacky with templates that transform
-    click.echo("Gathering information needed to transform the template...")
+    log.info("Gathering information needed to transform the template")
     transform_stack_details = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
@@ -50,7 +54,6 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
     cfn_client.get_waiter('change_set_create_complete').wait(
         ChangeSetName=transform_stack_details['Id']
     )
-    click.echo("Done")
 
     new_template = cfn_client.get_template(
         ChangeSetName=transform_stack_details['Id']
@@ -63,7 +66,7 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
         ChangeSetName=transform_stack_details['Id']
     )
 
-    click.echo("Transforming template...")
+    log.info("Transforming template")
     transform_stack = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
@@ -83,6 +86,7 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
         ChangeSetName=transform_stack['Id'],
         StackName=stack_name
     )
+    log.debug('Executing change set')
 
     return cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
 
@@ -100,6 +104,7 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
 
     try:
         if not 'DeclaredTransforms' in template_details:
+            log.debug('Creating stack')
             current_stack = cfn_client.create_stack(StackName=stack_name,
                                                     TemplateURL=template_url,
                                                     Parameters=stack_parameters,
@@ -115,26 +120,26 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
 
         STACK_LIST.append({'StackId': current_stack['StackId'], 'StackName': stack_name})
         stack_description = cfn_client.describe_stacks(StackName=current_stack['StackId'])['Stacks'][0]['Description']
-        click.echo("\nCreating {}...".format(stack_name))
-        click.echo("Description of {}: \n\t{}".format(stack_name, stack_description))
+        log.info("\nCreating {}...".format(stack_name))
+        log.info("Description of {}: \n\t{}".format(stack_name, stack_description))
         try:
             cfn_client.get_waiter('stack_create_complete').wait(StackName=current_stack['StackId'])
-            click.echo("Created {}.".format(stack_name))
+            log.info("Created {}.".format(stack_name))
 
             return {'StackName': stack_name}
         except botocore.exceptions.WaiterError:
-            click.echo("\n{} is currently rolling back.".format(stack_name))
+            log.info("\n{} is currently rolling back.".format(stack_name))
             resource_failures = [{'LogicalResourceId': event['LogicalResourceId'],
-                                 'ResourceStatusReason': event['ResourceStatusReason']} for event in
-                                cfn_client.describe_stack_events(StackName=current_stack['StackId'])['StackEvents']
-                                if event['ResourceStatus'] == 'CREATE_FAILED']
+                                  'ResourceStatusReason': event['ResourceStatusReason']} for event in
+                                 cfn_client.describe_stack_events(StackName=current_stack['StackId'])['StackEvents']
+                                 if event['ResourceStatus'] == 'CREATE_FAILED']
 
             if resource_failures:
                 for failures in resource_failures:
-                    click.echo("%s has failed to be created because: '%s'" % (
+                    log.info("%s has failed to be created because: '%s'" % (
                         failures['LogicalResourceId'], failures['ResourceStatusReason']))
             else:
-                click.echo("Please check console for why some resources failed to create.")
+                log.info("Please check console for why some resources failed to create.")
 
             sys.exit()
 

@@ -1,10 +1,17 @@
 from __future__ import print_function
 
+import logging
+
 import botocore
+
+log = logging.getLogger(__name__)
 
 
 def validate_templates(bucket, prefix, session):
     """"Attempts to validate every file in the bucket subdirectory with every known CloudFormation extension."""
+
+    log.debug("Validating templates")
+
     s3_client = session.client('s3')
     cf_client = session.client('cloudformation')
     cfn_ext = ('.json', '.template', '.txt', 'yaml', 'yml')
@@ -21,7 +28,7 @@ def validate_templates(bucket, prefix, session):
                                                             ExpiresIn=60)
             try:
                 cf_client.validate_template(TemplateURL=template_url)
-                print("Validated %s." % object['Key'])
+                log.info("Validated %s", object['Key'])
 
             except botocore.exceptions.ClientError as e:
                 validation_errors.append(e)

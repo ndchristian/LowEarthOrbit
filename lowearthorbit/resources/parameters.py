@@ -1,17 +1,25 @@
 import json
+import logging
 import os
 
 import click
 
+log = logging.getLogger(__name__)
+
 
 def gather(s3_client, cfn_client, key_object, parameters, bucket, job_identifier):
+    """Gathers parameters from input and assigns values for the stack"""
 
+    log.debug('Gathering parameters')
     if not parameters:
         if os.path.exists(parameters):
             with open(parameters, 'r') as file_contents:
                 parameters = json.loads(file_contents.read())
+
+            log.debug('Loaded parameters from file')
         else:
             parameters = json.loads(parameters)
+            log.debug('Loaded parameters from JSON input')
 
     template_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': '{}'.format(bucket),
@@ -23,6 +31,7 @@ def gather(s3_client, cfn_client, key_object, parameters, bucket, job_identifier
     for stack_parameter in template_summary['Parameters']:
         if stack_parameter['ParameterKey'] not in [p['ParameterKey'] for p in parameters]:
             parameters.append({'ParameterKey': stack_parameter['ParameterKey'], 'ParameterValue': None})
+    log.debug('Grabbed parameters from template')
 
     output_counter = 0
     for stack_outputs in sorted([stacks for stacks in cfn_client.describe_stacks()['Stacks'] if
@@ -42,6 +51,7 @@ def gather(s3_client, cfn_client, key_object, parameters, bucket, job_identifier
                                                                'ParameterValue': outputs['OutputValue']}
                 except KeyError:
                     pass
+        log.debug('Grabbed parameter values from stack outputs')
 
     for counter, parameter in enumerate(parameters):
         if parameter['ParameterValue'] is None:
