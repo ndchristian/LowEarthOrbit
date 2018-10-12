@@ -54,6 +54,7 @@ Configurable Options
 | botocore-session         | --botocore-session         | AWS Use this Botocore session instead of creating a new default one          | False     | String |
 | profile                  | --profile                  | The name of a profile to use. If not given, then the default profile is used | False     | String |
 | region                   | --region                   | Region when creating new connections                                         | False     | String |
+| debug                    | --debug                     | Shows information for debugging                                             | False     | Boolean|
 
 ----------------------------
 Commands:
@@ -144,16 +145,70 @@ Validates all files with the file extensions: .json, .template, .txt, yaml, or y
 | prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates are located | False    | String |
 
 ----------------------------
+
 Examples:
 ----------------------------
 
-Deploying:
-`leo deploy --bucket BUCKET --job-identifier JOB_IDENTIFIER --gated True --parameters '{"ParameterKey: "key", ParameterValue: "value"}'`
+Checkout the examples folder for more information.
 
-Uploading templates to S3:
+#### Delete:
 
-`leo upload --bucket BUCKET --prefix Templates --localpath ~/Templates`
+```
+#!/usr/bin/env bash
 
-Switching to a different profile while validating templates:
+source config.conf
 
-`leo --profile PROFILE validate --bucket BUCKET `
+echo $PROFILE
+echo $PRODBUCKET
+echo $PREFIX
+
+leo --profile $PROFILE plan --bucket $PRODBUCKET  --prefix $PREFIX
+
+exit
+```
+
+#### Deploy:
+
+```
+#!/usr/bin/env bash
+
+source config.conf
+
+echo $PRODBUCKET
+echo $JOB_IDENTIFIER
+echo $PARAMETERS
+
+leo deploy --bucket $PRODBUCKET --job-identifier $JOB_IDENTIFIER --gated True --parameters $PARAMETERS
+
+exit
+```
+
+#### Upload:
+```
+#!/usr/bin/env bash
+
+source config.conf
+
+#echo $PRODBUCKET
+#echo $PREFIX
+#echo $LOCALPATH
+
+leo upload --bucket $BUCKET --prefix $PREFIX --localpath $LOCALPATH
+
+exit
+```
+
+#### Validate:
+```
+#!/usr/bin/env bash
+
+source config.conf
+
+echo $PROFILE
+echo $PRODBUCKET
+echo $PREFIX
+
+leo --profile $PROFILE validate --bucket $PRODBUCKET  --prefix $PREFIX
+
+exit
+```

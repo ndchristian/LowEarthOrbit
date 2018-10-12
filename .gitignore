@@ -22,5 +22,6 @@ src/
 
 #VirtualEnv
 venv
+testenv
 
 

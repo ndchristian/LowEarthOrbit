@@ -1,7 +1,7 @@
-def get(template_url, session):
+def get(template_url, cfn_client):
     """Gets the needed capabilities for the CloudFormation stack """
 
-    template_details = session.client('cloudformation').get_template_summary(TemplateURL=template_url)
+    template_details = cfn_client.get_template_summary(TemplateURL=template_url)
 
     try:
         stack_capabilities = template_details['Capabilities']
