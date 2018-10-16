@@ -20,5 +20,5 @@ def upload_templates(Bucket, Prefix, Session, LocalPath):
                                   Bucket, "{}/{}".format(Prefix, file_object))
             s3_client.get_waiter('object_exists').wait(Bucket=Bucket,
                                                        Key="{}/{}".format(Prefix, file_object))
-            log.info('Uploaded {0:s} to {1:s}/{2:s}\n'.format(file_object, Bucket, Prefix))
-            log.info('Uploaded %s', file_object)
+            click.echo('Uploaded {0:s} to {1:s}/{2:s}\n'.format(file_object, Bucket, Prefix))
+            click.echo('Uploaded %s', file_object)

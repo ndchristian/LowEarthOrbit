@@ -28,7 +28,7 @@ def validate_templates(bucket, prefix, session):
                                                             ExpiresIn=60)
             try:
                 cf_client.validate_template(TemplateURL=template_url)
-                log.info("Validated %s", object['Key'])
+                click.echo("Validated %s", object['Key'])
 
             except botocore.exceptions.ClientError as e:
                 validation_errors.append({'Template': object['Key'], 'Error': e})
