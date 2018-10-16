@@ -31,6 +31,6 @@ def validate_templates(bucket, prefix, session):
                 log.info("Validated %s", object['Key'])
 
             except botocore.exceptions.ClientError as e:
-                validation_errors.append(e)
+                validation_errors.append({'Template': object['Key'], 'Error': e})
 
     return validation_errors
