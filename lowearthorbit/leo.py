@@ -147,9 +147,9 @@ def validate(config, bucket, prefix):
                                                prefix=prefix)
 
         if validation_errors:
-            log.info("Following errors occured when validating templates:")
+            click.echo("Following errors occurred when validating templates:")
             for error in validation_errors:
-                log.info('%s: %s' % (error['Template'], error['Error']))
+                click.echo('%s: %s' % (error['Template'], error['Error']))
     except Exception as e:
         log.exception('Error: %s', e)
         exit(1)
