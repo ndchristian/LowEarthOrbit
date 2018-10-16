@@ -8,7 +8,7 @@ from lowearthorbit.deploy import deploy_templates
 from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 
