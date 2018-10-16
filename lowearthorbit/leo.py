@@ -87,6 +87,9 @@ def delete(config, job_identifier):
 @click.option('--parameters', type=click.STRING, default=[],
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
+@click.option('--rollback-configuration', type=click.STRING, default=[],
+              help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
+                   'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', type=click.STRING, default=[],
               help='Tags added to all deployed stacks')
 @pass_config
@@ -146,7 +149,7 @@ def validate(config, bucket, prefix):
         if validation_errors:
             log.info("Following errors occured when validating templates:")
             for error in validation_errors:
-                log.info(error)
+                log.info('%s: %s' % (error['Template'], error['Error']))
     except Exception as e:
         log.exception('Error: %s', e)
         exit(1)
