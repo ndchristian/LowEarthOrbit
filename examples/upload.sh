@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-#echo $PRODBUCKET
+#echo $PROFILE
+#echo $BUCKET
 #echo $PREFIX
 #echo $LOCALPATH
 

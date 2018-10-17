@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PRODBUCKET
-echo $JOB_IDENTIFIER
-echo $PARAMETERS
+#echo $COUNT
+#echo $BUCKET
+#echo $JOBIDENTIFIER
+#echo $PARAMETERS
 
-leo deploy --bucket $PRODBUCKET --job-identifier $JOB_IDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
 
 exit
