@@ -156,13 +156,12 @@ Checkout the examples folder for more information.
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PROFILE
-echo $PRODBUCKET
-echo $PREFIX
+#echo $PROFILE
+#echo $PREFIX
 
-leo --profile $PROFILE plan --bucket $PRODBUCKET  --prefix $PREFIX
+leo --profile $PROFILE delete --prefix $PREFIX
 
 exit
 ```
@@ -172,13 +171,14 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PRODBUCKET
-echo $JOB_IDENTIFIER
-echo $PARAMETERS
+#echo $COUNT
+#echo $BUCKET
+#echo $JOBIDENTIFIER
+#echo $PARAMETERS
 
-leo deploy --bucket $PRODBUCKET --job-identifier $JOB_IDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
 
 exit
 ```
@@ -187,9 +187,10 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-#echo $PRODBUCKET
+#echo $PROFILE
+#echo $BUCKET
 #echo $PREFIX
 #echo $LOCALPATH
 
@@ -202,13 +203,13 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PROFILE
-echo $PRODBUCKET
-echo $PREFIX
+#echo $PROFILE
+#echo $BUCKET
+#echo $PREFIX
 
-leo --profile $PROFILE validate --bucket $PRODBUCKET  --prefix $PREFIX
+leo validate --bucket $BUCKET --prefix $PREFIX
 
 exit
 ```
