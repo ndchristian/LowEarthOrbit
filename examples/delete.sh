@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PROFILE
-echo $PRODBUCKET
-echo $PREFIX
+#echo $PROFILE
+#echo $PREFIX
 
-leo --profile $PROFILE plan --bucket $PRODBUCKET  --prefix $PREFIX
+leo --profile $PROFILE delete --prefix $PREFIX
 
 exit
 
