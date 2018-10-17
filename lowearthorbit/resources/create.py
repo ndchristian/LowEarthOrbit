@@ -4,6 +4,7 @@ import sys
 import time
 
 import botocore
+import click
 
 from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.parameters import gather as gather_parameters
