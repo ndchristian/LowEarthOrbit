@@ -20,6 +20,15 @@ class Config(object):
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
 
+def parse_args(arguments):
+    argument_parameters = {}
+    for key, value in arguments.items():
+        if value is not None:
+            argument_parameters.update({key: value})
+
+    return argument_parameters
+
+
 @click.group()
 @click.option('--aws-access-key-id', type=click.STRING, default=None,
               help='AWS access key ID')
@@ -39,21 +48,14 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, botocore_session, profile, region, debug):
     """Creates the connection to AWS with the specified session arguments"""
     try:
-        session_arguments = {}
-        if aws_access_key_id is not None:
-            session_arguments.update({'aws_access_key_id': aws_access_key_id})
-        if aws_secret_access_key is not None:
-            session_arguments.update({'aws_secret_access_key': aws_secret_access_key})
-        if aws_session_token is not None:
-            session_arguments.update({'aws_session_token': aws_session_token})
-        if botocore_session is not None:
-            session_arguments.update({'botocore_session': botocore_session})
-        if profile is not None:
-            session_arguments.update({'profile_name': profile})
-        if region is not None:
-            session_arguments.update({'region_name': region})
         if debug:
             log.setLevel(logging.DEBUG)
+
+        session_arguments = parse_args(arguments=locals())
+
+        # Not boto3 session arguments
+        del session_arguments['debug']
+        del session_arguments['config']
 
         log.debug('Passing session arguments')
         config.session = boto3.session.Session(**session_arguments)
@@ -116,7 +118,7 @@ def plan():
 @cli.command()
 @click.option('--bucket', type=click.STRING, required=True,
               help="S3 bucket that the CloudFormation templates will be uploaded to.")
-@click.option('--prefix', type=click.STRING, default='',
+@click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
 @click.option('--localpath', type=click.Path(exists=True), required=True,
               help='Local path where CloudFormation templates are located.')
@@ -136,15 +138,18 @@ def upload(config, bucket, prefix, localpath):
 @cli.command()
 @click.option('--bucket', type=click.STRING, required=True,
               help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING, default='',
+@click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @pass_config
 def validate(config, bucket, prefix):
     """Validates all templates"""
+    validate_arguments = parse_args(arguments=locals())
+
+    del validate_arguments['config']
+    validate_arguments.update({'session': config.session})
+
     try:
-        validation_errors = validate_templates(session=config.session,
-                                               bucket=bucket,
-                                               prefix=prefix)
+        validation_errors = validate_templates(**validate_arguments)
 
         if validation_errors:
             click.echo("Following errors occurred when validating templates:")
