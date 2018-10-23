@@ -30,17 +30,17 @@ def parse_args(arguments):
 
 
 @click.group()
-@click.option('--aws-access-key-id', type=click.STRING, default=None,
+@click.option('--aws-access-key-id', type=click.STRING,
               help='AWS access key ID')
-@click.option('--aws-secret-access-key', type=click.STRING, default=None,
+@click.option('--aws-secret-access-key', type=click.STRING,
               help='AWS secret access key')
-@click.option('--aws_session_token', type=click.STRING, default=None,
+@click.option('--aws_session_token', type=click.STRING,
               help='AWS temporary session token')
-@click.option('--botocore-session', type=click.STRING, default=None,
+@click.option('--botocore-session', type=click.STRING,
               help='Use this Botocore session instead of creating a new default one')
-@click.option('--profile', type=click.STRING, default=None,
+@click.option('--profile', type=click.STRING,
               help='The name of a profile to use. If not given, then the default profile is used')
-@click.option('--region', type=click.STRING, default=None,
+@click.option('--region', type=click.STRING,
               help='Region when creating new connections')
 @click.option('--debug', is_flag=True,
               help='Shows debug output')
