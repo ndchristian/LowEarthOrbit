@@ -18,6 +18,8 @@ def validate_templates(**kwargs):
         validate_parameters.update({'Bucket': kwargs['bucket']})
     if 'prefix' in kwargs:
         validate_parameters.update({'Prefix': kwargs['prefix']})
+    else:
+        validate_parameters.update({'Delimiter': '/'})
 
     session = kwargs['session']
 
