@@ -1,14 +1,18 @@
 import logging
 
 import botocore
+import click
 
 log = logging.getLogger(__name__)
 
 
-def delete_stacks(session, job_identifier):
+def delete_stacks(**kwargs):
     """Deletes all stacks with the specified job-identifier"""
 
     log.debug('Deleting stacks')
+
+    session = kwargs['session']
+    job_identifier = kwargs['job_identifier']
 
     cfn_client = session.client('cloudformation')
 
