@@ -125,11 +125,14 @@ def plan():
 @pass_config
 def upload(config, bucket, prefix, localpath):
     """Uploads all templates to S3"""
+
+    upload_arguments = parse_args(arguments=locals())
+
+    del upload_arguments['config']
+    upload_arguments.update({'session': config.session})
+
     try:
-        exit(upload_templates(Bucket=bucket,
-                              Prefix=prefix,
-                              Session=config.session,
-                              LocalPath=localpath))
+        exit(upload_templates(**upload_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
         exit(1)
