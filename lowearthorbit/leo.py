@@ -70,8 +70,12 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 @pass_config
 def delete(config, job_identifier):
     """Deletes all stacks with the given job identifier"""
+
+    delete_arguments = locals()
+    del delete_arguments['config']
+    delete_arguments.update({'session': config.session})
     try:
-        exit(delete_stacks(session=config.session, job_identifier=job_identifier))
+        exit(delete_stacks(**delete_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
         exit(1)
