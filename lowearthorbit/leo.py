@@ -84,7 +84,7 @@ def delete(config, job_identifier):
 @cli.command()
 @click.option('--bucket', type=click.STRING, required=True,
               help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING, default='',
+@click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL, default=False,
               help='Checks with user before deploying an update')
@@ -93,22 +93,21 @@ def delete(config, job_identifier):
 @click.option('--parameters', type=click.STRING, default=[],
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', type=click.STRING, default=[],
+@click.option('--rollback-configuration', type=click.STRING,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', type=click.STRING, default=[],
+@click.option('--tags', type=click.STRING,
               help='Tags added to all deployed stacks')
 @pass_config
-def deploy(config, bucket, prefix, gated, job_identifier, parameters, tags):
+def deploy(config, bucket, prefix, gated, job_identifier, parameters,rollback_configuration, tags):
     """Creates or updates cloudformation stacks"""
+
+    deploy_arguments = parse_args(arguments=locals())
+    del deploy_arguments['config']
+    deploy_arguments.update({'session':config.session})
+
     try:
-        exit(deploy_templates(session=config.session,
-                              bucket=bucket,
-                              gated=gated,
-                              job_identifier=job_identifier,
-                              parameters=parameters,
-                              prefix=prefix,
-                              tags=tags))
+        exit(deploy_templates(**deploy_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
         exit(1)

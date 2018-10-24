@@ -92,9 +92,24 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
     return cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
 
 
-def create_stack(key_object, template_url, template_details, bucket, job_identifier, parameters, tags, cfn_client,
-                 s3_client):
+def create_stack(**kwargs):
     """Creates the stack and handles rollback conditions"""
+
+    session = kwargs['session']
+    key_object = kwargs['key_object']
+    bucket = kwargs['bucket']
+    job_identifier = kwargs['job_identifier']
+    parameters = kwargs['parameters']
+    deploy_parameters = kwargs['deploy_parameters']
+
+    cfn_client = session.client('cloudformation')
+    s3_client = session.client('s3')
+
+    template_url = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket,
+                                                            'Key': object['Key']},
+                                                    ExpiresIn=60)
+    template_summary = cfn_client.get_template_summary(TemplateURL=template_url)
 
     stack_name = get_stackname(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
     stack_capabilities = get_capabilities(template_url=template_url, cfn_client=cfn_client)
@@ -104,7 +119,7 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
                                          job_identifier=job_identifier)
 
     try:
-        if not 'DeclaredTransforms' in template_details:
+        if not 'DeclaredTransforms' in template_summary:
             log.debug('Creating stack')
             current_stack = cfn_client.create_stack(StackName=stack_name,
                                                     TemplateURL=template_url,
@@ -112,7 +127,8 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
                                                     Capabilities=stack_capabilities,
                                                     DisableRollback=False,
                                                     TimeoutInMinutes=123,
-                                                    Tags=tags)
+                                                    **deploy_parameters
+                                                    )
         else:
             current_stack = transform_template(cfn_client=cfn_client,
                                                stack_name=stack_name,
@@ -143,7 +159,6 @@ def create_stack(key_object, template_url, template_details, bucket, job_identif
                 click.echo("Please check console for why some resources failed to create.")
 
             sys.exit()
-
 
     except botocore.exceptions.ClientError as e:
         raise e

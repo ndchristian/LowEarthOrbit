@@ -24,11 +24,23 @@ def deploy_type(stack_name, cfn_client):
     return {'Update': False}
 
 
-def deploy_templates(session, bucket, prefix, job_identifier, parameters, gated, tags):
+def deploy_templates(**kwargs):
     """Creates or updates CloudFormation stacks"""
 
     log.debug('Deploying templates')
 
+    objects_parameters = {}
+    objects_parameters.update({'Bucket': kwargs['bucket']})
+    if 'prefix' in kwargs:
+        objects_parameters.update({'Prefix': kwargs['prefix']})
+
+    deploy_parameters = {}
+    if 'tags' in kwargs:
+        deploy_parameters.update({'tags': kwargs['tags']})
+    if 'rollback_configuration' in kwargs:
+        deploy_parameters.update({'rollback_configuration': kwargs['rollback_configuration']})
+
+    session = kwargs['session']
     s3_client = session.client('s3')
     cfn_client = session.client('cloudformation')
 
@@ -37,17 +49,9 @@ def deploy_templates(session, bucket, prefix, job_identifier, parameters, gated,
     stack_archive = []
 
     stack_counter = 0
-    for object in s3_client.list_objects_v2(
-            Bucket=bucket,
-            Prefix=prefix
-    )['Contents']:
+    for object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
         if object['Key'].endswith(cfn_ext) and object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
-            template_url = s3_client.generate_presigned_url('get_object',
-                                                            Params={'Bucket': bucket,
-                                                                    'Key': object['Key']},
-                                                            ExpiresIn=60)
-            template_summary = cfn_client.get_template_summary(TemplateURL=template_url)
-            stack_name = "{}-{}".format(job_identifier, str(object['Key'].split('/')[-1]).rsplit('.', 1)[0])
+            stack_name = "{}-{}".format(kwargs['job_identifier'], str(object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
@@ -55,14 +59,13 @@ def deploy_templates(session, bucket, prefix, job_identifier, parameters, gated,
             if check['Update']:
                 try:
                     stack = exit(update_stack(update_stack_name=check['UpdateStackName'],
-                                              template_url=template_url,
-                                              session=session,
                                               key_object=object['Key'],
-                                              bucket=bucket,
-                                              job_identifier=job_identifier,
-                                              parameters=parameters,
-                                              tags=tags,
-                                              gated=gated))
+                                              bucket=objects_parameters['Bucket'],
+                                              job_identifier=kwargs['job_identifier'],
+                                              parameters=kwargs['parameters'],
+                                              gated=kwargs['gated'],
+                                              session=kwargs['session'],
+                                              deploy_parameters=deploy_parameters))
 
                     stack_archive.append({'StackName': stack['StackName']})
                 except Exception as e:
@@ -73,15 +76,13 @@ def deploy_templates(session, bucket, prefix, job_identifier, parameters, gated,
 
             else:
                 try:
-                    stack = create_stack(template_url=template_url,
-                                         template_details=template_summary,
-                                         parameters=parameters,
-                                         bucket=bucket,
-                                         cfn_client=cfn_client,
-                                         s3_client=s3_client,
-                                         key_object=object['Key'],
-                                         tags=tags,
-                                         job_identifier=job_identifier)
+                    stack = exit(create_stack(key_object=object['Key'],
+                                              bucket=objects_parameters['Bucket'],
+                                              job_identifier=kwargs['job_identifier'],
+                                              parameters=kwargs['parameters'],
+                                              gated=kwargs['gated'],
+                                              session=kwargs['session'],
+                                              deploy_parameters=deploy_parameters))
 
                     stack_archive.append({'StackName': stack['StackName']})
                 except Exception as e:
