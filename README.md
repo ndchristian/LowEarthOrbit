@@ -4,7 +4,7 @@
 About
 ------------
 
-Leo is a better, faster way to depoy AWS CloudFormation templates.
+A better, faster way to deploy AWS CloudFormation templates.
 
 ------------
 Installation
@@ -128,7 +128,7 @@ Uploads all files in the given local path with the file extensions: .json, .temp
 | :-------------|:-------------:| :---------------------------------------------------------------------:          | :-----:  | :----: |
 | bucket        | --bucket      | S3 bucket that the CloudFormation templates will be uploaded to                  | True     | String |
 | prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates will be uploaded to | False    | String |
-| localpath     | --localpath   | Local path where CloudFormation templates are located                            | True     | String |
+| local path    | --local-path  | Local path where CloudFormation templates are located                            | True     | String |
 ----------------------------
 
 ### validate
@@ -194,7 +194,7 @@ source environ.sh
 #echo $PREFIX
 #echo $LOCALPATH
 
-leo upload --bucket $BUCKET --prefix $PREFIX --localpath $LOCALPATH
+leo upload --bucket $BUCKET --prefix $PREFIX --local-path $LOCALPATH
 
 exit
 ```
