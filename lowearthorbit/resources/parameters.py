@@ -63,8 +63,11 @@ def add_input_parameter_values(parameters):
     return parameters
 
 
-def gather(s3_client, cfn_client, key_object, parameters, bucket, job_identifier):
+def gather(session, key_object, parameters, bucket, job_identifier):
     """Gathers parameters from input and assigns values for the stack"""
+
+    cfn_client = session.client('cloudformation')
+    s3_client = session.client('s3')
 
     log.debug('Gathering parameters')
     if not parameters:
@@ -93,8 +96,8 @@ def gather(s3_client, cfn_client, key_object, parameters, bucket, job_identifier
     log.debug('Added needed parameters')
 
     outputs_parameters = add_output_values(cfn_client=cfn_client,
-                                           job_identifier=job_identifier
-                                           , parameters=full_parameters)
+                                           job_identifier=job_identifier,
+                                           parameters=full_parameters)
     log.debug('Added output values to parameter values')
 
     completed_parameters = add_input_parameter_values(parameters=outputs_parameters)
