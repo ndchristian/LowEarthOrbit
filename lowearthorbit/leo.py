@@ -99,12 +99,12 @@ def delete(config, job_identifier):
 @click.option('--tags', type=click.STRING,
               help='Tags added to all deployed stacks')
 @pass_config
-def deploy(config, bucket, prefix, gated, job_identifier, parameters,rollback_configuration, tags):
+def deploy(config, bucket, prefix, gated, job_identifier, parameters, rollback_configuration, tags):
     """Creates or updates cloudformation stacks"""
 
     deploy_arguments = parse_args(arguments=locals())
     del deploy_arguments['config']
-    deploy_arguments.update({'session':config.session})
+    deploy_arguments.update({'session': config.session})
 
     try:
         exit(deploy_templates(**deploy_arguments))
@@ -123,10 +123,10 @@ def plan():
               help="S3 bucket that the CloudFormation templates will be uploaded to.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
-@click.option('--localpath', type=click.Path(exists=True), required=True,
+@click.option('--local-path', type=click.Path(exists=True), required=True,
               help='Local path where CloudFormation templates are located.')
 @pass_config
-def upload(config, bucket, prefix, localpath):
+def upload(config, bucket, prefix, local_path):
     """Uploads all templates to S3"""
 
     upload_arguments = parse_args(arguments=locals())

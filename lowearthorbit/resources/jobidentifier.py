@@ -4,15 +4,15 @@ import sys
 log = logging.getLogger(__name__)
 
 
-def check(JobIdentifier):
+def check(job_identifier):
     """Checks if the job identifier is up to CloudFormation's naming requirements."""
 
-    if not JobIdentifier:
+    if not job_identifier:
         sys.exit("job_identifier must have a value.")
 
-    if not JobIdentifier.isalnum():
+    if not job_identifier.isalnum():
         sys.exit("The job identifier must be alpha-numeric.")
 
-    log.debug('Checked job identifier: %s' % JobIdentifier)
+    log.debug('Checked job identifier: %s' % job_identifier)
 
-    return JobIdentifier
+    return job_identifier

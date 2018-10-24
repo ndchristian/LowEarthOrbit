@@ -29,19 +29,19 @@ def validate_templates(**kwargs):
 
     validation_errors = []
     try:
-        for object in s3_client.list_objects_v2(**validate_parameters
+        for s3_object in s3_client.list_objects_v2(**validate_parameters
                                                 )['Contents']:
-            if object['Key'].endswith(cfn_ext):
+            if s3_object['Key'].endswith(cfn_ext):
                 template_url = s3_client.generate_presigned_url('get_object',
                                                                 Params={'Bucket': kwargs['bucket'],
-                                                                        'Key': object['Key']},
+                                                                        'Key': s3_object['Key']},
                                                                 ExpiresIn=60)
                 try:
                     cf_client.validate_template(TemplateURL=template_url)
-                    click.echo("Validated %s" % object['Key'])
+                    click.echo("Validated %s" % s3_object['Key'])
 
                 except botocore.exceptions.ClientError as e:
-                    validation_errors.append({'Template': object['Key'], 'Error': e})
+                    validation_errors.append({'Template': s3_object['Key'], 'Error': e})
     except KeyError:
         log.error("The specified key does not exist in %s" % kwargs['bucket'])
 
