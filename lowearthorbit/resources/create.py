@@ -14,29 +14,29 @@ log = logging.getLogger(__name__)
 STACK_LIST = []
 
 
-def get_stackname(job_identifier, obj):
+def get_stack_name(job_identifier, obj):
     """Formats the stack name and make sure it meets CloudFormations naming requirements."""
 
-    stackname = "{}-{}".format(job_identifier, obj)
-    stackname_list = []  # Below checks if the stackname meets all requirements.
-    if not stackname[0].isalpha():
-        stackname = "s-" + stackname
-    if len(stackname) > 255:
-        stackname = stackname[:255]
-    for s in stackname:
+    stack_name = "{}-{}".format(job_identifier, obj)
+    stack_name_parts = []  # Below checks if the stack_name meets all requirements.
+    if not stack_name[0].isalpha():
+        stack_name = "s-" + stack_name
+    if len(stack_name) > 255:
+        stack_name = stack_name[:255]
+    for s in stack_name:
         if not s.isalnum():
             s = s.replace(s, "-")
-            stackname_list.append(s)
+            stack_name_parts.append(s)
         else:
-            stackname_list.append(s)
-    stackname = "".join(stackname_list)
+            stack_name_parts.append(s)
+    stack_name = "".join(stack_name_parts)
 
-    log.debug('Created stackname: %s' % stackname)
+    log.debug('Created stack name: %s' % stack_name)
 
-    return stackname
+    return stack_name
 
 
-def transform_template(cfn_client, stack_name, template_url, stack_parameters, tags):
+def transform_template(cfn_client, stack_name, template_url, stack_parameters, deploy_parameters):
     """Handles templates that transform, such as templates that are using SAM."""
 
     # Gathering capabilities is a bit wacky with templates that transform
@@ -45,11 +45,11 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
         StackName=stack_name,
         TemplateURL=template_url,
         Parameters=stack_parameters,
-        Tags=tags,
-        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
+        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
         Description="Transformation details change set for {} created by Leo".format(
             stack_name),
-        ChangeSetType='CREATE'
+        ChangeSetType='CREATE',
+        **deploy_parameters
     )
 
     cfn_client.get_waiter('change_set_create_complete').wait(
@@ -73,11 +73,11 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, t
         TemplateURL=template_url,
         Parameters=stack_parameters,
         Capabilities=new_template_capabilities['Capabilities'],
-        Tags=tags,
-        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
+        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
         Description="Transformation change set for {} created by Leo".format(
             stack_name),
-        ChangeSetType='CREATE'
+        ChangeSetType='CREATE',
+        **deploy_parameters
     )
 
     cfn_client.get_waiter('change_set_create_complete').wait(
@@ -107,19 +107,19 @@ def create_stack(**kwargs):
 
     template_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': bucket,
-                                                            'Key': object['Key']},
+                                                            'Key': key_object},
                                                     ExpiresIn=60)
     template_summary = cfn_client.get_template_summary(TemplateURL=template_url)
 
-    stack_name = get_stackname(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
-    stack_capabilities = get_capabilities(template_url=template_url, cfn_client=cfn_client)
+    stack_name = get_stack_name(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
+    stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
-    stack_parameters = gather_parameters(cfn_client=cfn_client, s3_client=s3_client,
+    stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
                                          job_identifier=job_identifier)
 
     try:
-        if not 'DeclaredTransforms' in template_summary:
+        if 'DeclaredTransforms' not in template_summary:
             log.debug('Creating stack')
             current_stack = cfn_client.create_stack(StackName=stack_name,
                                                     TemplateURL=template_url,
@@ -127,13 +127,13 @@ def create_stack(**kwargs):
                                                     Capabilities=stack_capabilities,
                                                     DisableRollback=False,
                                                     TimeoutInMinutes=123,
-                                                    **deploy_parameters
-                                                    )
+                                                    **deploy_parameters)
         else:
             current_stack = transform_template(cfn_client=cfn_client,
                                                stack_name=stack_name,
                                                template_url=template_url,
-                                               stack_parameters=stack_parameters)
+                                               stack_parameters=stack_parameters,
+                                               deploy_parameters=deploy_parameters)
 
         STACK_LIST.append({'StackId': current_stack['StackId'], 'StackName': stack_name})
         stack_description = cfn_client.describe_stacks(StackName=current_stack['StackId'])['Stacks'][0]['Description']

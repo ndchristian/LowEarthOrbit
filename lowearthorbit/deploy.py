@@ -49,9 +49,9 @@ def deploy_templates(**kwargs):
     stack_archive = []
 
     stack_counter = 0
-    for object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
-        if object['Key'].endswith(cfn_ext) and object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
-            stack_name = "{}-{}".format(kwargs['job_identifier'], str(object['Key'].split('/')[-1]).rsplit('.', 1)[0])
+    for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
+        if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
+            stack_name = "{}-{}".format(kwargs['job_identifier'], str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
@@ -59,7 +59,7 @@ def deploy_templates(**kwargs):
             if check['Update']:
                 try:
                     stack = exit(update_stack(update_stack_name=check['UpdateStackName'],
-                                              key_object=object['Key'],
+                                              key_object=s3_object['Key'],
                                               bucket=objects_parameters['Bucket'],
                                               job_identifier=kwargs['job_identifier'],
                                               parameters=kwargs['parameters'],
@@ -76,7 +76,7 @@ def deploy_templates(**kwargs):
 
             else:
                 try:
-                    stack = exit(create_stack(key_object=object['Key'],
+                    stack = exit(create_stack(key_object=s3_object['Key'],
                                               bucket=objects_parameters['Bucket'],
                                               job_identifier=kwargs['job_identifier'],
                                               parameters=kwargs['parameters'],

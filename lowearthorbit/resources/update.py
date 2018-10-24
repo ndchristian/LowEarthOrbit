@@ -37,10 +37,10 @@ def stack_continue_rollback_waiter(stack_name, cfn_client):
                 "Rolling back for {} has failed. Please check the console.".format(stack_details['StackName']))
 
 
-def change_set_delete_waiter(changeset_id, cfn_client):
+def change_set_delete_waiter(change_set_id, cfn_client):
     """Boto3 does not have a waiter for deleting a change set, this is a custom one"""
 
-    log.debug('Deleting changeset')
+    log.debug('Deleting change set')
 
     try:
         change_set_deletion_counter = 0
@@ -48,7 +48,7 @@ def change_set_delete_waiter(changeset_id, cfn_client):
 
         # Custom change set deletion waiter
         while change_set_deletion_bool:
-            change_set_details = cfn_client.describe_change_set(ChangeSetName=changeset_id)
+            change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set_id)
             if change_set_details['Status'] in 'DELETE_COMPLETE':
                 pass
                 change_set_deletion_bool = False
@@ -68,7 +68,7 @@ def change_set_delete_waiter(changeset_id, cfn_client):
                     time.sleep(15)
 
     except botocore.exceptions.ClientError:
-        # Changeset is already deleted therefore the waiter is no longer needed.
+        # Change set is already deleted therefore the waiter is no longer needed.
         pass
 
 
@@ -135,20 +135,19 @@ def update_stack(**kwargs):
     gated = kwargs['gated']
     deploy_parameters = kwargs['deploy_parameters']
 
-
     cfn_client = session.client('cloudformation')
     s3_client = session.client('s3')
 
     template_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': bucket,
-                                                            'Key': object['Key']},
+                                                            'Key': key_object},
                                                     ExpiresIn=60)
 
     click.echo("\nCreating change set for {}...".format(stack_name))
 
-    change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
+    change_set_name = 'change set-{}-{}'.format(stack_name, int(time.time()))
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
-    stack_parameters = gather_parameters(cfn_client=cfn_client, s3_client=s3_client,
+    stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
                                          job_identifier=job_identifier)
 
@@ -167,7 +166,7 @@ def update_stack(**kwargs):
 
     try:
         cfn_client.get_waiter('change_set_create_complete').wait(ChangeSetName=change_set['Id'])
-    except botocore.exceptions.WaiterError as changesetcreationerror:
+    except botocore.exceptions.WaiterError as change_set_creation_error:
         long_string_err = "The submitted information didn't contain changes. " \
                           "Submit different information to create a change set."
 
@@ -176,7 +175,7 @@ def update_stack(**kwargs):
             click.echo(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason'])
             pass
         else:
-            raise changesetcreationerror
+            raise change_set_creation_error
 
     # Checks for the changes
     change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set['Id'])
@@ -200,7 +199,7 @@ def update_stack(**kwargs):
                                                                                                  col5=replacement))
             click.echo("\t")
 
-        # Acts as a filter on past resource failers
+        # Acts as a filter on past resource failures
         past_failures = [stack_event for stack_event in
                          cfn_client.describe_stack_events(StackName=stack_name)['StackEvents'] if
                          stack_event['ResourceStatus'] in ['CREATE_FAILED', 'UPDATE_FAILED']]
@@ -225,7 +224,7 @@ def update_stack(**kwargs):
                     cfn_client.delete_change_set(ChangeSetName=change_set['Id'],
                                                  StackName=stack_name)
                     # Check if still needed
-                    change_set_delete_waiter(changeset_id=change_set['Id'], cfn_client=cfn_client)
+                    change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)
                     break
 
     else:
@@ -233,4 +232,4 @@ def update_stack(**kwargs):
         click.echo("No changes found for {}".format(stack_name))
         click.echo("Deleting change set for {}...".format(change_set_name))
         cfn_client.delete_change_set(ChangeSetName=change_set['Id'], StackName=stack_name)
-        change_set_delete_waiter(changeset_id=change_set['Id'], cfn_client=cfn_client)
+        change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)

@@ -18,7 +18,7 @@ def format_path(**kwargs):
 
 
 def upload_templates(**kwargs):
-    """Uploads files with the standard CloudFormation file extentions to the specific bucket in """
+    """Uploads files with the standard CloudFormation file extensions to the specific bucket in """
 
     log.debug('Uploading templates to S3')
 
@@ -33,7 +33,7 @@ def upload_templates(**kwargs):
         upload_parameters.update({'prefix': prefix})
 
     bucket = kwargs['bucket']
-    local_path = kwargs['localpath']
+    local_path = kwargs['local_path']
     session = kwargs['session']
 
     s3_client = session.client('s3')
