@@ -37,10 +37,10 @@ def stack_continue_rollback_waiter(stack_name, cfn_client):
                 "Rolling back for {} has failed. Please check the console.".format(stack_details['StackName']))
 
 
-def change_set_delete_waiter(changeset_id, cfn_client):
+def change_set_delete_waiter(change_set_id, cfn_client):
     """Boto3 does not have a waiter for deleting a change set, this is a custom one"""
 
-    log.debug('Deleting changeset')
+    log.debug('Deleting change set')
 
     try:
         change_set_deletion_counter = 0
@@ -48,7 +48,7 @@ def change_set_delete_waiter(changeset_id, cfn_client):
 
         # Custom change set deletion waiter
         while change_set_deletion_bool:
-            change_set_details = cfn_client.describe_change_set(ChangeSetName=changeset_id)
+            change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set_id)
             if change_set_details['Status'] in 'DELETE_COMPLETE':
                 pass
                 change_set_deletion_bool = False
@@ -68,7 +68,7 @@ def change_set_delete_waiter(changeset_id, cfn_client):
                     time.sleep(15)
 
     except botocore.exceptions.ClientError:
-        # Changeset is already deleted therefore the waiter is no longer needed.
+        # Change set is already deleted therefore the waiter is no longer needed.
         pass
 
 
@@ -96,7 +96,7 @@ def change_log(changes):
 
 
 def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name, change_set):
-    log.info("Executing change set: {}...".format(change_set_name))
+    click.echo("Executing change set: {}...".format(change_set_name))
     cfn_client.execute_change_set(ChangeSetName=change_set['Id'], StackName=update_stack_name)
 
     try:
@@ -112,7 +112,7 @@ def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name,
                     click.echo("%s has failed to be updated because: '%s'" % (
                         failures['LogicalResourceId'], failures['ResourceStatusReason']))
         else:
-            log.info("Please check console for why some resources failed to update.")
+            click.echo("Please check console for why some resources failed to update.")
 
         stack_status = cfn_client.describe_stacks(StackName=update_stack_name)['Stacks'][0]['StackStatus']
         if stack_status == 'UPDATE_ROLLBACK_FAILED':
@@ -123,51 +123,66 @@ def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name,
         sys.exit("Stopped update because of %s's updating failure." % update_stack_name)
 
 
-def update_stack(update_stack_name, template_url, key_object, tags, gated, session, bucket, job_identifier, parameters):
+def update_stack(**kwargs):
     """Updates stack if there is a stack by the same name"""
+
+    session = kwargs['session']
+    key_object = kwargs['key_object']
+    stack_name = kwargs['update_stack_name']
+    bucket = kwargs['bucket']
+    job_identifier = kwargs['job_identifier']
+    parameters = kwargs['parameters']
+    gated = kwargs['gated']
+    deploy_parameters = kwargs['deploy_parameters']
 
     cfn_client = session.client('cloudformation')
     s3_client = session.client('s3')
 
-    log.info("\nCreating change set for {}...".format(update_stack_name))
+    template_url = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket,
+                                                            'Key': key_object},
+                                                    ExpiresIn=60)
 
-    change_set_name = 'changeset-{}-{}'.format(update_stack_name, int(time.time()))
+    click.echo("\nCreating change set for {}...".format(stack_name))
+
+    change_set_name = 'change set-{}-{}'.format(stack_name, int(time.time()))
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
-    stack_parameters = gather_parameters(cfn_client=cfn_client, s3_client=s3_client,
+    stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
                                          job_identifier=job_identifier)
 
     try:
         change_set = cfn_client.create_change_set(
-            StackName=update_stack_name,
+            StackName=stack_name,
             TemplateURL=template_url,
             Parameters=stack_parameters,
             Capabilities=stack_capabilities,
             ChangeSetName=change_set_name,
-            Description="Change set for {} created by Leo".format(update_stack_name),
-            Tags=tags)
+            Description="Change set for {} created by Leo".format(stack_name),
+            **deploy_parameters
+        )
     except botocore.exceptions.ClientError as ChangeSetCreationError:
         raise ChangeSetCreationError
 
     try:
         cfn_client.get_waiter('change_set_create_complete').wait(ChangeSetName=change_set['Id'])
-    except botocore.exceptions.WaiterError as changesetcreationerror:
+    except botocore.exceptions.WaiterError as change_set_creation_error:
         long_string_err = "The submitted information didn't contain changes. " \
                           "Submit different information to create a change set."
 
         if str(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason']) in \
                 (long_string_err, "No updates are to be performed."):
-            log.info(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason'])
+            click.echo(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason'])
             pass
         else:
-            raise changesetcreationerror
+            raise change_set_creation_error
 
     # Checks for the changes
     change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set['Id'])
     change_set_changes = change_set_details['Changes']
 
     if change_set_changes:
-        log.info("Gathering changes for change set: {}...".format(change_set_name))
+        click.echo("Gathering changes for change set: {}...".format(change_set_name))
         for change in change_log(changes=change_set_changes):
             # Dynamically gathers the length of each change in order to display information better
             action = sorted([len(item[0]) for item in change])[-1]
@@ -176,45 +191,45 @@ def update_stack(update_stack_name, template_url, key_object, tags, gated, sessi
             resource = sorted([len(item[3]) for item in change])[-1]
             replacement = sorted([len(item[4]) for item in change])[-1]
 
-            log.info('{0: <{col1}}  {1:<{col2}}  {2:<{col3}}  {3:<{col4}}  {4:<{col5}}'.format(*change,
-                                                                                               col1=action,
-                                                                                               col2=logical,
-                                                                                               col3=physical,
-                                                                                               col4=resource,
-                                                                                               col5=replacement))
+            click.echo('{0: <{col1}}  {1:<{col2}}  {2:<{col3}}  {3:<{col4}}  {4:<{col5}}'.format(*change,
+                                                                                                 col1=action,
+                                                                                                 col2=logical,
+                                                                                                 col3=physical,
+                                                                                                 col4=resource,
+                                                                                                 col5=replacement))
             click.echo("\t")
 
-        # Acts as a filter on past resource failers
+        # Acts as a filter on past resource failures
         past_failures = [stack_event for stack_event in
-                         cfn_client.describe_stack_events(StackName=update_stack_name)['StackEvents'] if
+                         cfn_client.describe_stack_events(StackName=stack_name)['StackEvents'] if
                          stack_event['ResourceStatus'] in ['CREATE_FAILED', 'UPDATE_FAILED']]
 
         if not gated:
             apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
-                          update_stack_name=update_stack_name, past_failures=past_failures)
-            return {'StackName': update_stack_name}
+                          update_stack_name=stack_name, past_failures=past_failures)
+            return {'StackName': stack_name}
         else:
-            log.info("Would you like to execute these changes?")
+            click.echo("Would you like to execute these changes?")
             while True:
                 execute_changes = click.prompt("Answer: ")
                 if execute_changes.lower() in ('yes', 'ya', 'y', 'yea', 'yup', 'yeah'):
                     apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
-                                  update_stack_name=update_stack_name, past_failures=past_failures)
+                                  update_stack_name=stack_name, past_failures=past_failures)
 
-                    return {'StackName': update_stack_name}
+                    return {'StackName': stack_name}
 
                 if execute_changes.lower() in ('no', 'na', 'n', 'nah', 'nope'):
                     click.echo("Moving on from executing {}".format(change_set_name))
                     click.echo("Deleting change set {}...".format(change_set_name))
                     cfn_client.delete_change_set(ChangeSetName=change_set['Id'],
-                                                 StackName=update_stack_name)
+                                                 StackName=stack_name)
                     # Check if still needed
-                    change_set_delete_waiter(changeset_id=change_set['Id'], cfn_client=cfn_client)
+                    change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)
                     break
 
     else:
         # If there are no changes it passes and deletes the change set
-        log.info("No changes found for {}".format(update_stack_name))
-        log.info("Deleting change set for {}...".format(change_set_name))
-        cfn_client.delete_change_set(ChangeSetName=change_set['Id'], StackName=update_stack_name)
-        change_set_delete_waiter(changeset_id=change_set['Id'], cfn_client=cfn_client)
+        click.echo("No changes found for {}".format(stack_name))
+        click.echo("Deleting change set for {}...".format(change_set_name))
+        cfn_client.delete_change_set(ChangeSetName=change_set['Id'], StackName=stack_name)
+        change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)

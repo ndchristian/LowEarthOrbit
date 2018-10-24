@@ -4,7 +4,7 @@
 About
 ------------
 
-Leo is a better, faster way to depoy AWS CloudFormation templates.
+A better, faster way to deploy AWS CloudFormation templates.
 
 ------------
 Installation
@@ -128,7 +128,7 @@ Uploads all files in the given local path with the file extensions: .json, .temp
 | :-------------|:-------------:| :---------------------------------------------------------------------:          | :-----:  | :----: |
 | bucket        | --bucket      | S3 bucket that the CloudFormation templates will be uploaded to                  | True     | String |
 | prefix        | --prefix      | Prefix or bucket subdirectory where CloudFormation templates will be uploaded to | False    | String |
-| localpath     | --localpath   | Local path where CloudFormation templates are located                            | True     | String |
+| local path    | --local-path  | Local path where CloudFormation templates are located                            | True     | String |
 ----------------------------
 
 ### validate
@@ -156,13 +156,12 @@ Checkout the examples folder for more information.
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PROFILE
-echo $PRODBUCKET
-echo $PREFIX
+#echo $PROFILE
+#echo $PREFIX
 
-leo --profile $PROFILE plan --bucket $PRODBUCKET  --prefix $PREFIX
+leo --profile $PROFILE delete --prefix $PREFIX
 
 exit
 ```
@@ -172,13 +171,14 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PRODBUCKET
-echo $JOB_IDENTIFIER
-echo $PARAMETERS
+#echo $COUNT
+#echo $BUCKET
+#echo $JOBIDENTIFIER
+#echo $PARAMETERS
 
-leo deploy --bucket $PRODBUCKET --job-identifier $JOB_IDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
 
 exit
 ```
@@ -187,13 +187,14 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-#echo $PRODBUCKET
+#echo $PROFILE
+#echo $BUCKET
 #echo $PREFIX
 #echo $LOCALPATH
 
-leo upload --bucket $BUCKET --prefix $PREFIX --localpath $LOCALPATH
+leo upload --bucket $BUCKET --prefix $PREFIX --local-path $LOCALPATH
 
 exit
 ```
@@ -202,13 +203,13 @@ exit
 ```
 #!/usr/bin/env bash
 
-source config.conf
+source environ.sh
 
-echo $PROFILE
-echo $PRODBUCKET
-echo $PREFIX
+#echo $PROFILE
+#echo $BUCKET
+#echo $PREFIX
 
-leo --profile $PROFILE validate --bucket $PRODBUCKET  --prefix $PREFIX
+leo validate --bucket $BUCKET --prefix $PREFIX
 
 exit
 ```
