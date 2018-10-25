@@ -1,3 +1,4 @@
+import ast
 import logging
 
 import boto3
@@ -17,7 +18,13 @@ class Config(object):
         self.session = ''
 
 
-pass_config = click.make_pass_decorator(Config, ensure=True)
+class LiteralOption(click.Option):
+    def type_cast_value(self, ctx, value):
+        try:
+            return ast.literal_eval(value)
+        except (SyntaxError,ValueError):
+            if value is not None:
+                raise click.BadParameter(value)
 
 
 def parse_args(arguments):
@@ -27,6 +34,9 @@ def parse_args(arguments):
             argument_parameters.update({key: value})
 
     return argument_parameters
+
+
+pass_config = click.make_pass_decorator(Config, ensure=True)
 
 
 @click.group()
@@ -90,13 +100,15 @@ def delete(config, job_identifier):
               help='Checks with user before deploying an update')
 @click.option('--job-identifier', type=click.STRING, required=True,
               help='Prefix that is added on to the deployed stack names')
-@click.option('--parameters', type=click.STRING, default=[],
+@click.option('--parameters', type=LiteralOption, default=[],
+              help='All parameters that are needed to deploy with.')
+@click.option('--notification-arns', type=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', type=click.STRING,
+@click.option('--rollback-configuration', type=LiteralOption,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', type=click.STRING,
+@click.option('--tags', type=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
 def deploy(config, bucket, prefix, gated, job_identifier, parameters, rollback_configuration, tags):
