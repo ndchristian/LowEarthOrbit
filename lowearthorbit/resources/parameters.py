@@ -69,17 +69,6 @@ def gather(session, key_object, parameters, bucket, job_identifier):
     cfn_client = session.client('cloudformation')
     s3_client = session.client('s3')
 
-    log.debug('Gathering parameters')
-    if not parameters:
-        if os.path.exists(parameters):
-            with open(parameters, 'r') as file_contents:
-                parameters = json.loads(file_contents.read())
-
-            log.debug('Loaded parameters from file')
-        else:
-            parameters = json.loads(parameters)
-            log.debug('Loaded parameters from JSON input')
-
     template_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': '{}'.format(bucket),
                                                             'Key': key_object},
