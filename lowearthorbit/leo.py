@@ -22,7 +22,7 @@ class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
         try:
             return ast.literal_eval(value)
-        except (SyntaxError,ValueError):
+        except (SyntaxError, ValueError):
             if value is not None:
                 raise click.BadParameter(value)
 
@@ -111,7 +111,7 @@ def delete(config, job_identifier):
 @click.option('--tags', type=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
-def deploy(config, bucket, prefix, gated, job_identifier, parameters, rollback_configuration, tags):
+def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags):
     """Creates or updates cloudformation stacks"""
 
     deploy_arguments = parse_args(arguments=locals())
