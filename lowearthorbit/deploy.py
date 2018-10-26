@@ -39,6 +39,8 @@ def deploy_templates(**kwargs):
         deploy_parameters.update({'tags': kwargs['tags']})
     if 'rollback_configuration' in kwargs:
         deploy_parameters.update({'rollback_configuration': kwargs['rollback_configuration']})
+    if 'notification_arns' in kwargs:
+        deploy_parameters.update({'NotificationARNs': kwargs['notification_arns']})
 
     session = kwargs['session']
     s3_client = session.client('s3')
@@ -51,7 +53,8 @@ def deploy_templates(**kwargs):
     stack_counter = 0
     for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
         if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
-            stack_name = "{}-{}".format(kwargs['job_identifier'], str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
+            stack_name = "{}-{}".format(kwargs['job_identifier'],
+                                        str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
@@ -71,9 +74,6 @@ def deploy_templates(**kwargs):
                 except Exception as e:
                     log.exception('Error: %s', e)
                     exit(1)
-
-
-
             else:
                 try:
                     stack = exit(create_stack(key_object=s3_object['Key'],
