@@ -160,13 +160,14 @@ def create_stack(**kwargs):
             transformed = True
 
         else:
+            cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url, Parameters=stack_parameters)['Url']
+            click.echo("Estimated template costs: {}".format(cost_url))
             display_changes(changes=template_summary['ResourceTypes'], name=stack_name, change_set=False)
 
         if gated:
             execute_changes = click.confirm("Would you like to deploy?")
             if execute_changes:
                 if transformed:
-                    # noinspection PyUnboundLocalVariable
                     cfn_client.execute_change_set(ChangeSetName=transformed_stack['Id'],
                                                   StackName=stack_name)
                     current_stack = cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
