@@ -6,6 +6,7 @@ import click
 
 from lowearthorbit.delete import delete_stacks
 from lowearthorbit.deploy import deploy_templates
+from lowearthorbit.plan import plan_deployment
 from lowearthorbit.upload import upload_templates
 from lowearthorbit.validate import validate_templates
 
@@ -126,8 +127,27 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
 
 
 @cli.command()
-def plan():
-    click.echo("plan")
+@click.option('--bucket', type=click.STRING, required=True,
+              help="S3 bucket that has the CloudFormation templates.")
+@click.option('--prefix', type=click.STRING,
+              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option('--job-identifier', type=click.STRING, required=True,
+              help='Prefix that is used to identify stacks')
+@click.option('--parameters', type=LiteralOption, default=[],
+              help='All parameters that are needed to create an accurate plan.')
+def plan(config, bucket, prefix, job_identifier, parameters):
+    """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
+
+    plan_arguments = parse_args(arguments=locals())
+
+    del plan_arguments['config']
+    plan_arguments.update({'session': config.session})
+
+    try:
+        exit(plan_deployment(**plan_arguments))
+    except Exception as e:
+        log.exception('Error: %s', e)
+        exit(1)
 
 
 @cli.command()
