@@ -141,6 +141,37 @@ Tags JSON syntax:
 
 ----------------------------
 
+### plan
+
+#### Description:
+
+Creates or updates CloudFormation stacks.
+
+
+### Options:
+
+| Variable      | Option          | Description                                                                                                                          | Required | Type    |
+| :-------------|:-------------:  | :---------------------------------------------------------------------:                                                              | :-----:  | :----:  |
+| bucket                | --bucket                 | S3 bucket that the CloudFormation templates will be deployed from                                                   | True     | String  |
+| prefix                | --prefix                 | Prefix or bucket subdirectory where CloudFormation templates will be deployed from                                  | False    | String  |
+| job-identifier        | --job-identifier         | Prefix that is used to identify stacks                                                                              | True     | String  |
+| parameters            | --parameters             | All parameters that are needed to create an accurate plan. Must be JSON that's in single quotes                     | False    | JSON    |                                    | False    | JSON    |
+
+Parameters JSON syntax:
+
+```[
+  {
+    "ParameterKey": "string",
+    "ParameterValue": "string",
+    "UsePreviousValue": true|false,
+    "ResolvedValue": "string"
+  }
+  ...
+] 
+```
+
+----------------------------
+
 ### upload
 
 #### Description:
