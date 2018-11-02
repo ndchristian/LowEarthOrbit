@@ -239,6 +239,21 @@ leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --g
 exit
 ```
 
+#### Plan:
+```
+#!/usr/bin/env bash
+
+source environ.sh
+
+#echo $PROFILE
+#echo $BUCKET
+#echo $PREFIX
+
+leo plan --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER  --parameters $PARAMETERS
+
+exit
+```
+
 #### Upload:
 ```
 #!/usr/bin/env bash
