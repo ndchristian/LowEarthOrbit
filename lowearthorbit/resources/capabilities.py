@@ -6,8 +6,6 @@ log = logging.getLogger(__name__)
 def get(template_url, session):
     """Gets the needed capabilities for the CloudFormation stack """
 
-    log.debug('Retrieving stack capabilities')
-
     cfn_client = session.client('cloudformation')
 
     template_details = cfn_client.get_template_summary(TemplateURL=template_url)
@@ -15,6 +13,8 @@ def get(template_url, session):
     try:
         stack_capabilities = template_details['Capabilities']
     except KeyError:
+        # May not be needed since it's not required when creating or updating a stack
         stack_capabilities = []
 
+    log.debug("Stack capabilities: %s" % stack_capabilities)
     return stack_capabilities

@@ -81,6 +81,7 @@ def update_stack(**kwargs):
                           update_stack_name=stack_name, past_failures=past_failures)
             return {'StackName': stack_name}
         else:
+            # Change click.confirm
             click.echo("Would you like to execute these changes?")
             while True:
                 execute_changes = click.prompt("Answer: ")

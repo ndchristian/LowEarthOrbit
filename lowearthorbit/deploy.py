@@ -29,11 +29,13 @@ def deploy_templates(**kwargs):
 
     log.debug('Deploying templates')
 
+    # Parameters to find the templates in specified S3 bucket
     objects_parameters = {}
     objects_parameters.update({'Bucket': kwargs['bucket']})
     if 'prefix' in kwargs:
         objects_parameters.update({'Prefix': kwargs['prefix']})
 
+    # Fix inconsistent way of passing arguments
     deploy_parameters = {}
     if 'tags' in kwargs:
         deploy_parameters.update({'tags': kwargs['tags']})
@@ -52,13 +54,17 @@ def deploy_templates(**kwargs):
 
     stack_counter = 0
     for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
+        # Only lets through S3 objects with the names properly formatted for LEO
         if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
+
             stack_name = "{}-{}".format(kwargs['job_identifier'],
                                         str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
 
+            # If stack name exists it will update, else it will create
+            log.debug("Update check: %".format(check))
             if check['Update']:
                 try:
                     stack = exit(update_stack(update_stack_name=check['UpdateStackName'],
@@ -89,4 +95,5 @@ def deploy_templates(**kwargs):
                     log.exception('Error: %s', e)
                     exit(1)
 
+            # Allows LEO to progress in the assigned order
             stack_counter += 1
