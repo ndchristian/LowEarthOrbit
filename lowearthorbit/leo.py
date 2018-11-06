@@ -74,7 +74,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
         del session_arguments['debug']
         del session_arguments['config']
 
-        log.debug("Boto session arguments : {}".format(**session_arguments))
+        log.debug("Boto session arguments : {}".format(session_arguments))
         config.session = boto3.session.Session(**session_arguments)
     except Exception as e:
         log.exception('Error: %s', e)
@@ -94,7 +94,7 @@ def delete(config, job_identifier):
     del delete_arguments['config']
     delete_arguments.update({'session': config.session})
     try:
-        log.debug('Delete arguments: {}'.format(**delete_arguments))
+        log.debug('Delete arguments: {}'.format(delete_arguments))
         exit(delete_stacks(**delete_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -131,7 +131,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
     deploy_arguments.update({'session': config.session})
 
     try:
-        log.debug('Deploy arguments: {}'.format(**deploy_arguments))
+        log.debug('Deploy arguments: {}'.format(deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -157,7 +157,7 @@ def plan(config, bucket, prefix, job_identifier, parameters):
     plan_arguments.update({'session': config.session})
 
     try:
-        log.debug("Plan arguments: {}".format(**plan_arguments))
+        log.debug("Plan arguments: {}".format(plan_arguments))
         exit(plan_deployment(**plan_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -182,7 +182,7 @@ def upload(config, bucket, prefix, local_path):
     upload_arguments.update({'session': config.session})
 
     try:
-        log.debug("Upload arguments: {}".format(**upload_arguments))
+        log.debug("Upload arguments: {}".format(upload_arguments))
         exit(upload_templates(**upload_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -205,7 +205,7 @@ def validate(config, bucket, prefix):
 
     # Displays all validation errors
     try:
-        log.debug("Validate arguments: {}".format(**validate_arguments))
+        log.debug("Validate arguments: {}".format(validate_arguments))
         validation_errors = exit(validate_templates(**validate_arguments))
 
         if validation_errors:
