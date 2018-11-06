@@ -100,7 +100,6 @@ def plan_deployment(**kwargs):
     job_identifier = kwargs['job_identifier']
     parameters = kwargs['parameters']
 
-    # Need to standardize the way arguments are passed
     objects_parameters = {}
     objects_parameters.update({'Bucket': bucket})
     if 'prefix' in kwargs:

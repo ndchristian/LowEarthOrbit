@@ -35,7 +35,6 @@ def deploy_templates(**kwargs):
     if 'prefix' in kwargs:
         objects_parameters.update({'Prefix': kwargs['prefix']})
 
-    # Fix inconsistent way of passing arguments
     deploy_parameters = {}
     if 'tags' in kwargs:
         deploy_parameters.update({'tags': kwargs['tags']})
