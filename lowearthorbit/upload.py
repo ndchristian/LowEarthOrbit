@@ -44,8 +44,7 @@ def upload_templates(**kwargs):
         # Needs a better if to only upload files with the LEO formatted names?
         if file_object.lower().endswith(cfn_ext):
             upload_parameters.update({'file_object': file_object})
-            # Needs more descriptive function parameter naming
-            s3_client.upload_file(format_path(obj_1=local_path, obj_2=file_object),
+            s3_client.upload_file(format_path(local_path=local_path, file_object=file_object),
                                   bucket, format_path(**upload_parameters))
 
             s3_client.get_waiter('object_exists').wait(Bucket=bucket,
