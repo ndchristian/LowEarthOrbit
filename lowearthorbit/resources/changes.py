@@ -11,8 +11,6 @@ log = logging.getLogger(__name__)
 def stack_continue_rollback_waiter(stack_name, cfn_client):
     """Boto3 does not have a waiter for creating rolling back a stack completely, this is a custom one"""
 
-    log.debug('Stack is rolling back')
-
     stack_continue_rollback_counter = 0
     stack_continue_rollback = True
 
@@ -37,13 +35,10 @@ def stack_continue_rollback_waiter(stack_name, cfn_client):
 def change_set_delete_waiter(change_set_id, cfn_client):
     """Boto3 does not have a waiter for deleting a change set, this is a custom one"""
 
-    log.debug('Deleting change set')
-
     try:
         change_set_deletion_counter = 0
         change_set_deletion_bool = True
 
-        # Custom change set deletion waiter
         while change_set_deletion_bool:
             change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set_id)
             if change_set_details['Status'] in 'DELETE_COMPLETE':
@@ -70,6 +65,8 @@ def change_set_delete_waiter(change_set_id, cfn_client):
 
 
 def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name, change_set):
+    """Applies the change set and handles situations if something goes wrong"""
+
     click.echo("Executing change set: {}...".format(change_set_name))
     cfn_client.execute_change_set(ChangeSetName=change_set['Id'], StackName=update_stack_name)
 
@@ -94,6 +91,7 @@ def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name,
             cfn_client.continue_update_rollback(StackName=update_stack_name)
             stack_continue_rollback_waiter(stack_name=update_stack_name, cfn_client=cfn_client)
 
+        # Don't use sys.exit?
         sys.exit("Stopped update because of %s's updating failure." % update_stack_name)
 
 

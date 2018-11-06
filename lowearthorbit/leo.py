@@ -16,11 +16,13 @@ log = logging.getLogger(__name__)
 
 class Config(object):
     def __init__(self):
+        """Creates a decorator so AWS configuration options can be passed"""
         self.session = ''
 
 
 class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
+        """Turns JSON input into a data structure Python can work with"""
         try:
             return ast.literal_eval(value)
         except (SyntaxError, ValueError):
@@ -29,10 +31,13 @@ class LiteralOption(click.Option):
 
 
 def parse_args(arguments):
+    """Filters through the options and arguments and only passes those that have a value"""
     argument_parameters = {}
     for key, value in arguments.items():
         if value is not None:
             argument_parameters.update({key: value})
+
+    log.debug("Arguments after filter: {}".format(argument_parameters))
 
     return argument_parameters
 
@@ -60,6 +65,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
     """Creates the connection to AWS with the specified session arguments"""
     try:
         if debug:
+            log.warning("Sensitive details may be in output")
             log.setLevel(logging.DEBUG)
 
         session_arguments = parse_args(arguments=locals())
@@ -68,7 +74,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
         del session_arguments['debug']
         del session_arguments['config']
 
-        log.debug('Passing session arguments')
+        log.debug("Boto session arguments : {}".format(**session_arguments))
         config.session = boto3.session.Session(**session_arguments)
     except Exception as e:
         log.exception('Error: %s', e)
@@ -83,9 +89,12 @@ def delete(config, job_identifier):
     """Deletes all stacks with the given job identifier"""
 
     delete_arguments = locals()
+
+    # config.session, not config should be passed
     del delete_arguments['config']
     delete_arguments.update({'session': config.session})
     try:
+        log.debug('Delete arguments: {}'.format(**delete_arguments))
         exit(delete_stacks(**delete_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -116,10 +125,13 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
     """Creates or updates cloudformation stacks"""
 
     deploy_arguments = parse_args(arguments=locals())
+
+    # config.session, not config should be passed
     del deploy_arguments['config']
     deploy_arguments.update({'session': config.session})
 
     try:
+        log.debug('Deploy arguments: {}'.format(**deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -140,10 +152,12 @@ def plan(config, bucket, prefix, job_identifier, parameters):
 
     plan_arguments = parse_args(arguments=locals())
 
+    # config.session, not config should be passed
     del plan_arguments['config']
     plan_arguments.update({'session': config.session})
 
     try:
+        log.debug("Plan arguments: {}".format(**plan_arguments))
         exit(plan_deployment(**plan_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -163,10 +177,12 @@ def upload(config, bucket, prefix, local_path):
 
     upload_arguments = parse_args(arguments=locals())
 
+    # config.session, not config should be passed
     del upload_arguments['config']
     upload_arguments.update({'session': config.session})
 
     try:
+        log.debug("Upload arguments: {}".format(**upload_arguments))
         exit(upload_templates(**upload_arguments))
     except Exception as e:
         log.exception('Error: %s', e)
@@ -183,11 +199,14 @@ def validate(config, bucket, prefix):
     """Validates all templates"""
     validate_arguments = parse_args(arguments=locals())
 
+    # config.session, not config should be passed
     del validate_arguments['config']
     validate_arguments.update({'session': config.session})
 
+    # Displays all validation errors
     try:
-        validation_errors = validate_templates(**validate_arguments)
+        log.debug("Validate arguments: {}".format(**validate_arguments))
+        validation_errors = exit(validate_templates(**validate_arguments))
 
         if validation_errors:
             click.echo("Following errors occurred when validating templates:")

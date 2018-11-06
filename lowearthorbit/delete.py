@@ -9,8 +9,6 @@ log = logging.getLogger(__name__)
 def delete_stacks(**kwargs):
     """Deletes all stacks with the specified job-identifier"""
 
-    log.debug('Deleting stacks')
-
     session = kwargs['session']
     job_identifier = kwargs['job_identifier']
 
@@ -25,6 +23,7 @@ def delete_stacks(**kwargs):
             # Non-Leo stacks
             pass
 
+    log.debug("Stacks to be deleted: %s" % identified_stacks)
     for identified_stack in identified_stacks:
         cfn_client.delete_stack(StackName=identified_stack)
         try:

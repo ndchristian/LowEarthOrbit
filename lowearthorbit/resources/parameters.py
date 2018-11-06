@@ -90,4 +90,5 @@ def gather(session, key_object, parameters, bucket, job_identifier):
     completed_parameters = add_input_parameter_values(parameters=outputs_parameters)
     log.debug('Added user input parameter values')
 
+    log.debug("Completed parameters: {}".format(completed_parameters))
     return completed_parameters

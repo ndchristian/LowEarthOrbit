@@ -24,6 +24,7 @@ def upload_templates(**kwargs):
 
     upload_parameters = {}
 
+    # Gets rid of excess forward slashes
     if 'prefix' in kwargs:
         prefix = kwargs['prefix']
         if prefix[-1] == "/":
@@ -40,8 +41,10 @@ def upload_templates(**kwargs):
     cfn_ext = ('.json', '.template', '.txt', 'yaml', 'yml')
 
     for file_object in os.listdir(local_path):
+        # Needs a better if to only upload files with the LEO formatted names?
         if file_object.lower().endswith(cfn_ext):
             upload_parameters.update({'file_object': file_object})
+            # Needs more descriptive function parameter naming
             s3_client.upload_file(format_path(obj_1=local_path, obj_2=file_object),
                                   bucket, format_path(**upload_parameters))
 

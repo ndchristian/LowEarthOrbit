@@ -100,6 +100,7 @@ def plan_deployment(**kwargs):
     job_identifier = kwargs['job_identifier']
     parameters = kwargs['parameters']
 
+    # Need to standardize the way arguments are passed
     objects_parameters = {}
     objects_parameters.update({'Bucket': bucket})
     if 'prefix' in kwargs:
@@ -111,6 +112,7 @@ def plan_deployment(**kwargs):
     stack_counter = 0
     for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
         if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
+            # Only lets through S3 objects with the names properly formatted for LEO
             stack_name = "{}-{}".format(job_identifier,
                                         str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
@@ -139,4 +141,5 @@ def plan_deployment(**kwargs):
                             template_url=template_url,
                             stack_name=stack_name)
 
+            # Allows LEO to progress in the assigned order
             stack_counter += 1

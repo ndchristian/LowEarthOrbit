@@ -16,7 +16,7 @@ STACK_LIST = []
 
 
 def get_stack_name(job_identifier, obj):
-    """Formats the stack name and make sure it meets CloudFormations naming requirements."""
+    """Formats the stack name and make sure it meets LEO and CloudFormations naming requirements."""
 
     stack_name = "{}-{}".format(job_identifier, obj)
     stack_name_parts = []  # Below checks if the stack_name meets all requirements.
@@ -89,6 +89,8 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
 
 
 def display_status(cfn_client, current_stack, stack_name):
+    """Tells the user what's going on when the stack is being created"""
+
     STACK_LIST.append({'StackId': current_stack['StackId'], 'StackName': stack_name})
     stack_description = cfn_client.describe_stacks(StackName=current_stack['StackId'])['Stacks'][0][
         'Description']
@@ -116,7 +118,6 @@ def display_status(cfn_client, current_stack, stack_name):
         sys.exit()
 
 
-# noinspection PyUnboundLocalVariable
 def create_stack(**kwargs):
     """Creates the stack and handles rollback conditions"""
 
@@ -145,6 +146,7 @@ def create_stack(**kwargs):
                                          job_identifier=job_identifier)
 
     try:
+        # Templates with declared transformations need to be transformed before being fed to CloudFormation
         transformed = False
         if 'DeclaredTransforms' in template_summary:
             transformed_stack = transform_template(cfn_client=cfn_client,

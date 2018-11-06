@@ -19,6 +19,7 @@ def validate_templates(**kwargs):
     if 'prefix' in kwargs:
         validate_parameters.update({'Prefix': kwargs['prefix']})
     else:
+        # Needed so LEO doesn't attempt to validate everything in the bucket if no prefix is specified
         validate_parameters.update({'Delimiter': '/'})
 
     session = kwargs['session']
@@ -29,8 +30,7 @@ def validate_templates(**kwargs):
 
     validation_errors = []
     try:
-        for s3_object in s3_client.list_objects_v2(**validate_parameters
-                                                )['Contents']:
+        for s3_object in s3_client.list_objects_v2(**validate_parameters)['Contents']:
             if s3_object['Key'].endswith(cfn_ext):
                 template_url = s3_client.generate_presigned_url('get_object',
                                                                 Params={'Bucket': kwargs['bucket'],
