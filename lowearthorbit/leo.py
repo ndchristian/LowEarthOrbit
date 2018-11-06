@@ -112,13 +112,13 @@ def delete(config, job_identifier):
               help='Prefix that is added on to the deployed stack names')
 @click.option('--parameters', type=LiteralOption, default=[],
               help='All parameters that are needed to deploy with.')
-@click.option('--notification-arns', type=LiteralOption,
+@click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', type=LiteralOption,
+@click.option('--rollback-configuration', cls=LiteralOption,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', type=LiteralOption,
+@click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
 def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags):
@@ -145,8 +145,9 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING, required=True,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', type=LiteralOption, default=[],
+@click.option('--parameters', cls=LiteralOption, default=[],
               help='All parameters that are needed to create an accurate plan.')
+@pass_config
 def plan(config, bucket, prefix, job_identifier, parameters):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
 
