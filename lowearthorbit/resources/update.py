@@ -81,24 +81,20 @@ def update_stack(**kwargs):
                           update_stack_name=stack_name, past_failures=past_failures)
             return {'StackName': stack_name}
         else:
-            # Change click.confirm
-            click.echo("Would you like to execute these changes?")
-            while True:
-                execute_changes = click.prompt("Answer: ")
-                if execute_changes.lower() in ('yes', 'ya', 'y', 'yea', 'yup', 'yeah'):
-                    apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
-                                  update_stack_name=stack_name, past_failures=past_failures)
+            update_choice = click.confirm("Would you like to execute these changes?")
+            if update_choice:
+                apply_changes(change_set_name=change_set['Id'], change_set=change_set, cfn_client=cfn_client,
+                              update_stack_name=stack_name, past_failures=past_failures)
 
-                    return {'StackName': stack_name}
+                return {'StackName': stack_name}
 
-                if execute_changes.lower() in ('no', 'na', 'n', 'nah', 'nope'):
-                    click.echo("Moving on from executing {}".format(change_set_name))
-                    click.echo("Deleting change set {}...".format(change_set_name))
-                    cfn_client.delete_change_set(ChangeSetName=change_set['Id'],
-                                                 StackName=stack_name)
-                    # Check if still needed
-                    change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)
-                    break
+            else:
+                click.echo("Moving on from executing {}".format(change_set_name))
+                click.echo("Deleting change set {}...".format(change_set_name))
+                cfn_client.delete_change_set(ChangeSetName=change_set['Id'],
+                                             StackName=stack_name)
+                # Check if still needed
+                change_set_delete_waiter(change_set_id=change_set['Id'], cfn_client=cfn_client)
 
     else:
         # If there are no changes it passes and deletes the change set
