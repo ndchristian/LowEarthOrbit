@@ -37,7 +37,7 @@ def parse_args(arguments):
         if value is not None:
             argument_parameters.update({key: value})
 
-    log.debug("Arguments after filter: {}".format(argument_parameters))
+    log.debug("Arguments after parse_args filter: {}".format(argument_parameters))
 
     return argument_parameters
 
@@ -207,7 +207,6 @@ def validate(config, bucket, prefix):
     try:
         log.debug("Validate arguments: {}".format(validate_arguments))
         validation_errors = exit(validate_templates(**validate_arguments))
-
         if validation_errors:
             click.echo("Following errors occurred when validating templates:")
             for error in validation_errors:
