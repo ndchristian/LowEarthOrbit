@@ -45,4 +45,5 @@ def validate_templates(**kwargs):
     except KeyError:
         log.error("The specified key does not exist in %s" % kwargs['bucket'])
 
-    return validation_errors
+    if validation_errors:
+        return validation_errors
