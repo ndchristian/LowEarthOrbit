@@ -184,6 +184,8 @@ def create_stack(**kwargs):
 
                 display_status(cfn_client=cfn_client, current_stack=current_stack, stack_name=stack_name)
 
+                return {'StackName': stack_name}
+
             else:
                 if transformed:
                     click.echo("Deleting change set {}...".format(transformed_stack['Id']))
@@ -207,6 +209,8 @@ def create_stack(**kwargs):
                                                         **deploy_parameters)
 
             display_status(cfn_client=cfn_client, current_stack=current_stack, stack_name=stack_name)
+
+            return {'StackName': stack_name}
 
     except botocore.exceptions.ClientError as e:
         raise e

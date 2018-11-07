@@ -10,12 +10,9 @@ def deploy_type(stack_name, cfn_client):
     """Checks if the CloudFormation stack should be created or updated"""
 
     log.debug('Gathering deploy type')
-
     for stack in cfn_client.describe_stacks()['Stacks']:
-        cfn_stack_name = stack['StackName'].split('-')
-        leo_stack_name = stack_name.split('-')
         try:
-            if cfn_stack_name[0] == leo_stack_name[0] and cfn_stack_name[2] == leo_stack_name[2]:
+            if stack_name == stack['StackName']:
                 if stack['StackStatus'] in ('CREATE_COMPLETE', 'UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'):
                     return {'Update': True, 'UpdateStackName': stack['StackName']}
         except IndexError:  # For non-Leo stack names
