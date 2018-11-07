@@ -7,12 +7,13 @@ log = logging.getLogger(__name__)
 
 def remove_parameters(all_parameters, template_parameters):
     """Removes all parameters that the template does not need."""
-    template_parameters = [p['ParameterKey'] for p in template_parameters]
+    template_parameter_keys = [p['ParameterKey'] for p in template_parameters]
+    log.debug("TEMPLATE PARAMETER KEYS: {}".format(template_parameter_keys))
+    template_parameters = []
     for parameter in all_parameters:
-        if parameter['ParameterKey'] not in template_parameters:
-            all_parameters.remove(parameter)
-
-    return all_parameters
+        if parameter['ParameterKey'] in template_parameter_keys:
+            template_parameters.append(parameter)
+    return template_parameters
 
 
 def add_absent_parameters(parameters, template_parameters):
@@ -76,6 +77,7 @@ def gather(session, key_object, parameters, bucket, job_identifier):
 
     slimmed_parameters = remove_parameters(all_parameters=parameters,
                                            template_parameters=template_summary['Parameters'])
+    print("Slimmed: %s" % slimmed_parameters)
     log.debug('Removed unneeded parameters')
 
     full_parameters = add_absent_parameters(parameters=slimmed_parameters,
