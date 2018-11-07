@@ -53,9 +53,12 @@ def add_input_parameter_values(parameters):
     """If there is a parameter that does not have a value, it requests the user to add it"""
     for counter, parameter in enumerate(parameters):
         if parameter['ParameterValue'] is None:
-            value = click.prompt("Please enter a value for {}: ".format(parameter['ParameterKey']))
-            if value.replace(" ", "") == "":
+            value = click.prompt("Please enter a value for {}: ".format(parameter['ParameterKey']), default="",
+                                 show_default=False)
+            if not value.strip():
                 parameters.remove(parameter)
+                continue
+
             else:
                 parameters[counter] = {'ParameterKey': parameter['ParameterKey'],
                                        'ParameterValue': value}
