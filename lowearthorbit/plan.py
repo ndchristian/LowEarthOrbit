@@ -24,11 +24,11 @@ def create_plan(session, bucket, s3_object_key, job_identifier, parameters, temp
     try:
         cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
                                                      Parameters=stack_parameters)['Url']
-    except botocore.exceptions.ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError) as e:
         cost_url = None
         log.warning(e)
 
-    click.echo("Estimated template costs: {}".format(cost_url))
+    click.echo("Estimated template cost URL: {}".format(cost_url))
     display_changes(changes=template_summary['ResourceTypes'], name=stack_name, change_set=False)
 
 
@@ -39,7 +39,7 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
 
     click.echo("\nCreating change set for {}...".format(stack_name))
 
-    change_set_name = 'change set-{}-{}'.format(stack_name, int(time.time()))
+    change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
     stack_parameters = gather(session=session,
@@ -119,7 +119,6 @@ def plan_deployment(**kwargs):
                                                             Params={'Bucket': bucket,
                                                                     'Key': s3_object['Key']},
                                                             ExpiresIn=60)
-
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
             if check['Update']:
