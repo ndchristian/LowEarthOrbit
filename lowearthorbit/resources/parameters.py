@@ -29,21 +29,22 @@ def add_absent_parameters(parameters, template_parameters):
 def add_output_values(cfn_client, job_identifier, parameters):
     """Adds output values from previous stacks with the same job identifier to the parameter values"""
     output_counter = 0
-    for stack in sorted([stacks for stacks in cfn_client.describe_stacks()['Stacks'] if
-                         "%s-" % job_identifier in stacks['StackName']],
-                        key=lambda k: int(k['StackName'].split("-")[1])):
+    stack_names = sorted([stack['StackName'] for stack in cfn_client.describe_stacks()['Stacks'] if
+                          "{}-".format(job_identifier) in stack['StackName']])
+    for stack_name in stack_names:
+        for stack in cfn_client.describe_stacks(StackName=stack_name)['Stacks']:
+            if "{}-".format(job_identifier) in stack['StackName'] and "%02d" % output_counter in stack['StackName']:
+                output_counter += 1
+                try:
+                    if stack['Outputs']:
+                        for index_counter, parameter in enumerate(parameters):
+                            for output in stack['Outputs']:
+                                if parameter['ParameterKey'] == output['OutputKey']:
+                                    parameters[index_counter] = {'ParameterKey': parameter['ParameterKey'],
+                                                                 'ParameterValue': output['OutputValue']}
 
-        if "{}-".format(job_identifier) in stack['StackName'] and "%02d" % output_counter in stack['StackName']:
-            output_counter += 1
-            try:
-                if stack['Outputs']:
-                    for index_counter, parameter in enumerate(parameters):
-                        for output in stack['Outputs']:
-                            if parameter['ParameterKey'] == output['OutputKey']:
-                                parameters[index_counter] = {'ParameterKey': parameter['ParameterKey'],
-                                                             'ParameterValue': output['OutputValue']}
-            except KeyError:
-                pass
+                except KeyError:
+                    pass
 
     return parameters
 
@@ -77,7 +78,6 @@ def gather(session, key_object, parameters, bucket, job_identifier):
 
     slimmed_parameters = remove_parameters(all_parameters=parameters,
                                            template_parameters=template_summary['Parameters'])
-    print("Slimmed: %s" % slimmed_parameters)
     log.debug('Removed unneeded parameters')
 
     full_parameters = add_absent_parameters(parameters=slimmed_parameters,
