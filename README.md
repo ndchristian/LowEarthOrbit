@@ -234,7 +234,7 @@ source environ.sh
 #echo $JOBIDENTIFIER
 #echo $PARAMETERS
 
-leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters "$PARAMETERS"
 
 exit
 ```
@@ -249,7 +249,7 @@ source environ.sh
 #echo $BUCKET
 #echo $PREFIX
 
-leo plan --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER  --parameters $PARAMETERS
+leo plan --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER  --parameters "$PARAMETERS"
 
 exit
 ```
