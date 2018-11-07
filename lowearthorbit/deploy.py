@@ -55,44 +55,45 @@ def deploy_templates(**kwargs):
     for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
         # Only lets through S3 objects with the names properly formatted for LEO
         if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
-
             stack_name = "{}-{}".format(kwargs['job_identifier'],
                                         str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
 
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
-
             # If stack name exists it will update, else it will create
             log.debug("Update check: %".format(check))
+            print(check)
             if check['Update']:
                 try:
-                    stack = exit(update_stack(update_stack_name=check['UpdateStackName'],
-                                              key_object=s3_object['Key'],
-                                              bucket=objects_parameters['Bucket'],
-                                              job_identifier=kwargs['job_identifier'],
-                                              parameters=kwargs['parameters'],
-                                              gated=kwargs['gated'],
-                                              session=kwargs['session'],
-                                              deploy_parameters=deploy_parameters))
+                    stack = update_stack(update_stack_name=check['UpdateStackName'],
+                                         key_object=s3_object['Key'],
+                                         bucket=objects_parameters['Bucket'],
+                                         job_identifier=kwargs['job_identifier'],
+                                         parameters=kwargs['parameters'],
+                                         gated=kwargs['gated'],
+                                         session=kwargs['session'],
+                                         deploy_parameters=deploy_parameters)
 
-                    stack_archive.append({'StackName': stack['StackName']})
+                    if stack is not None:  # If there are no changes to the stack
+                        stack_archive.append({'StackName': stack['StackName']})
+
+                    stack_counter += 1
                 except Exception as e:
                     log.exception('Error: %s', e)
                     exit(1)
             else:
                 try:
-                    stack = exit(create_stack(key_object=s3_object['Key'],
-                                              bucket=objects_parameters['Bucket'],
-                                              job_identifier=kwargs['job_identifier'],
-                                              parameters=kwargs['parameters'],
-                                              gated=kwargs['gated'],
-                                              session=kwargs['session'],
-                                              deploy_parameters=deploy_parameters))
+                    stack = create_stack(key_object=s3_object['Key'],
+                                         bucket=objects_parameters['Bucket'],
+                                         job_identifier=kwargs['job_identifier'],
+                                         parameters=kwargs['parameters'],
+                                         gated=kwargs['gated'],
+                                         session=kwargs['session'],
+                                         deploy_parameters=deploy_parameters)
 
                     stack_archive.append({'StackName': stack['StackName']})
+                    stack_counter += 1
                 except Exception as e:
                     log.exception('Error: %s', e)
                     exit(1)
 
-            # Allows LEO to progress in the assigned order
-            stack_counter += 1
