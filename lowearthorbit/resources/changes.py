@@ -118,7 +118,7 @@ def change_log(changes, change_set):
                          "Replacement: {}".format(replacement)])
     else:
         for change in changes:
-            data.append(["Resource: {}".format(change)])
+            data.append(change)
 
     return data
 
@@ -144,6 +144,6 @@ def display_changes(changes, name, change_set):
             click.echo("\t")
 
     else:
+        click.echo("Resources to be created:")
         for change in change_log(changes=changes, change_set=change_set):
-            click.echo(change)
-            click.echo("\t")
+            click.echo("\t{}".format(change))
