@@ -110,7 +110,7 @@ def delete(config, job_identifier):
               help='Checks with user before deploying an update')
 @click.option('--job-identifier', type=click.STRING, required=True,
               help='Prefix that is added on to the deployed stack names')
-@click.option('--parameters', type=LiteralOption, default=[],
+@click.option('--parameters', cls=LiteralOption, default=[],
               help='All parameters that are needed to deploy with.')
 @click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
