@@ -33,7 +33,7 @@ def update_stack(**kwargs):
 
     click.echo("\nCreating change set for {}...".format(stack_name))
 
-    change_set_name = 'change set-{}-{}'.format(stack_name, int(time.time()))
+    change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
     stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
