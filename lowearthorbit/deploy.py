@@ -59,7 +59,6 @@ def deploy_templates(**kwargs):
                                 cfn_client=cfn_client)
             # If stack name exists it will update, else it will create
             log.debug("Update check: %".format(check))
-            print(check)
             if check['Update']:
                 try:
                     stack = update_stack(update_stack_name=check['UpdateStackName'],
@@ -88,9 +87,11 @@ def deploy_templates(**kwargs):
                                          session=kwargs['session'],
                                          deploy_parameters=deploy_parameters)
 
-                    stack_archive.append({'StackName': stack['StackName']})
+                    if stack is None:  # If the user decided not to deploy
+                        exit(0)
+                    else:
+                        stack_archive.append({'StackName': stack['StackName']})
                     stack_counter += 1
                 except Exception as e:
                     log.exception('Error: %s', e)
                     exit(1)
-
