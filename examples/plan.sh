@@ -5,8 +5,9 @@ source environ.sh
 #echo $PROFILE
 #echo $BUCKET
 #echo $PREFIX
+#echo $JOBIDENTIFIER
+#echo $PARAMETERS
 
-leo plan
+leo plan --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER  --parameters "$PARAMETERS"
 
 exit
-

@@ -82,14 +82,16 @@ Creates or updates CloudFormation stacks.
 
 ### Options:
 
-| Variable      | Option          | Description                                                                                                               | Required | Type      |
-| :-------------|:-------------:  | :---------------------------------------------------------------------:                                                   | :-----:  | :----:  |
-| bucket           | --bucket           | S3 bucket that the CloudFormation templates will be deployed from                                                   | True     | String  |
-| prefix           | --prefix           | Prefix or bucket subdirectory where CloudFormation templates will be deployed from                                  | False    | String  |
-| gated            | --gated            | Checks with user before deploying an update                                                                         | False    | Boolean |
-| job-identifier   | --job-identifier   | Prefix that is added on to the deployed stack names                                                                 | True     | String  |
-| parameters       | --parameters       | All parameters that are needed to deploy with. Can either be from a JSON file or typed JSON that must be in quotes  | False    | String  |
-| tags             | --tags             | Tags added to all deployed stacks. Must be JSON that's in quotes                                                    | False     | String  |
+| Variable      | Option          | Description                                                                                                                          | Required | Type    |
+| :-------------|:-------------:  | :---------------------------------------------------------------------:                                                              | :-----:  | :----:  |
+| bucket                | --bucket                 | S3 bucket that the CloudFormation templates will be deployed from                                                   | True     | String  |
+| prefix                | --prefix                 | Prefix or bucket subdirectory where CloudFormation templates will be deployed from                                  | False    | String  |
+| gated                 | --gated                  | Checks with user before deploying an update                                                                         | False    | Boolean |
+| job-identifier        | --job-identifier         | Prefix that is added on to the deployed stack names                                                                 | True     | String  |
+| parameters            | --parameters             | All parameters that are needed to deploy with. Must be JSON that's in single quotes                                 | False    | JSON    |
+| notification-arns     | --notification-arns      | Notification ARNs added to all deployed stacks. Must be JSON that's in single quotes                                | False    | JSON    |
+| rollback-configuration| --rollback-configuration | Rollback configurations added to all deployed stacks. Must be JSON that's in single quotes                          | False    | JSON    |
+| tags                  | --tags                   | Tags added to all deployed stacks. Must be JSON that's in single quotes                                             | False    | JSON    |
 
 Parameters JSON syntax:
 
@@ -103,6 +105,29 @@ Parameters JSON syntax:
   ...
 ] 
 ```
+Notification ARNs JSON syntax:
+```
+[
+  "string", 
+  "string", 
+  "string"
+]
+```
+
+Rollback Configurations JSON syntax:
+```
+{
+  "RollbackTriggers": [
+    {
+      "Arn": "string",
+      "Type": "string"
+    }
+    ...
+  ],
+  "MonitoringTimeInMinutes": integer
+}
+```
+
 Tags JSON syntax:
 ```
 [
@@ -112,6 +137,37 @@ Tags JSON syntax:
   }
   ...
 ]
+```
+
+----------------------------
+
+### plan
+
+#### Description:
+
+Creates or updates CloudFormation stacks.
+
+
+### Options:
+
+| Variable      | Option          | Description                                                                                                                          | Required | Type    |
+| :-------------|:-------------:  | :---------------------------------------------------------------------:                                                              | :-----:  | :----:  |
+| bucket                | --bucket                 | S3 bucket that the CloudFormation templates will be deployed from                                                   | True     | String  |
+| prefix                | --prefix                 | Prefix or bucket subdirectory where CloudFormation templates will be deployed from                                  | False    | String  |
+| job-identifier        | --job-identifier         | Prefix that is used to identify stacks                                                                              | True     | String  |
+| parameters            | --parameters             | All parameters that are needed to create an accurate plan. Must be JSON that's in single quotes                     | False    | JSON    |                                    | False    | JSON    |
+
+Parameters JSON syntax:
+
+```[
+  {
+    "ParameterKey": "string",
+    "ParameterValue": "string",
+    "UsePreviousValue": true|false,
+    "ResolvedValue": "string"
+  }
+  ...
+] 
 ```
 
 ----------------------------
@@ -178,7 +234,22 @@ source environ.sh
 #echo $JOBIDENTIFIER
 #echo $PARAMETERS
 
-leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters "$PARAMETERS"
+
+exit
+```
+
+#### Plan:
+```
+#!/usr/bin/env bash
+
+source environ.sh
+
+#echo $PROFILE
+#echo $BUCKET
+#echo $PREFIX
+
+leo plan --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER  --parameters "$PARAMETERS"
 
 exit
 ```

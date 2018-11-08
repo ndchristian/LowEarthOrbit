@@ -1,12 +1,5 @@
-import logging
-
-log = logging.getLogger(__name__)
-
-
 def get(template_url, session):
     """Gets the needed capabilities for the CloudFormation stack """
-
-    log.debug('Retrieving stack capabilities')
 
     cfn_client = session.client('cloudformation')
 
@@ -15,6 +8,7 @@ def get(template_url, session):
     try:
         stack_capabilities = template_details['Capabilities']
     except KeyError:
+        # May not be needed since it's not required when creating or updating a stack
         stack_capabilities = []
 
     return stack_capabilities

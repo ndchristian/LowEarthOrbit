@@ -7,6 +7,6 @@ source environ.sh
 #echo $JOBIDENTIFIER
 #echo $PARAMETERS
 
-leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters $PARAMETERS
+leo deploy --bucket $BUCKET --prefix $PREFIX --job-identifier $JOBIDENTIFIER --gated True --parameters "$PARAMETERS"
 
 exit

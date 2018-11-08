@@ -1,7 +1,4 @@
-import logging
 import sys
-
-log = logging.getLogger(__name__)
 
 
 def check(job_identifier):
@@ -12,7 +9,5 @@ def check(job_identifier):
 
     if not job_identifier.isalnum():
         sys.exit("The job identifier must be alpha-numeric.")
-
-    log.debug('Checked job identifier: %s' % job_identifier)
 
     return job_identifier

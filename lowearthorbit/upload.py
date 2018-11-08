@@ -1,11 +1,8 @@
 from __future__ import print_function
 
-import logging
 import os
 
 import click
-
-log = logging.getLogger(__name__)
 
 
 def format_path(**kwargs):
@@ -20,10 +17,9 @@ def format_path(**kwargs):
 def upload_templates(**kwargs):
     """Uploads files with the standard CloudFormation file extensions to the specific bucket in """
 
-    log.debug('Uploading templates to S3')
-
     upload_parameters = {}
 
+    # Gets rid of excess forward slashes
     if 'prefix' in kwargs:
         prefix = kwargs['prefix']
         if prefix[-1] == "/":
@@ -40,9 +36,10 @@ def upload_templates(**kwargs):
     cfn_ext = ('.json', '.template', '.txt', 'yaml', 'yml')
 
     for file_object in os.listdir(local_path):
+        # Needs a better if to only upload files with the LEO formatted names?
         if file_object.lower().endswith(cfn_ext):
             upload_parameters.update({'file_object': file_object})
-            s3_client.upload_file(format_path(obj_1=local_path, obj_2=file_object),
+            s3_client.upload_file(format_path(local_path=local_path, file_object=file_object),
                                   bucket, format_path(**upload_parameters))
 
             s3_client.get_waiter('object_exists').wait(Bucket=bucket,

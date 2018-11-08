@@ -11,14 +11,13 @@ log = logging.getLogger(__name__)
 def validate_templates(**kwargs):
     """"Attempts to validate every file in the bucket subdirectory with every known CloudFormation extension."""
 
-    log.debug("Validating templates")
-
     validate_parameters = {}
     if 'bucket' in kwargs:
         validate_parameters.update({'Bucket': kwargs['bucket']})
     if 'prefix' in kwargs:
         validate_parameters.update({'Prefix': kwargs['prefix']})
     else:
+        # Needed so LEO doesn't attempt to validate everything in the bucket if no prefix is specified
         validate_parameters.update({'Delimiter': '/'})
 
     session = kwargs['session']
@@ -29,8 +28,7 @@ def validate_templates(**kwargs):
 
     validation_errors = []
     try:
-        for s3_object in s3_client.list_objects_v2(**validate_parameters
-                                                )['Contents']:
+        for s3_object in s3_client.list_objects_v2(**validate_parameters)['Contents']:
             if s3_object['Key'].endswith(cfn_ext):
                 template_url = s3_client.generate_presigned_url('get_object',
                                                                 Params={'Bucket': kwargs['bucket'],
@@ -45,4 +43,5 @@ def validate_templates(**kwargs):
     except KeyError:
         log.error("The specified key does not exist in %s" % kwargs['bucket'])
 
-    return validation_errors
+    if validation_errors:
+        return validation_errors
