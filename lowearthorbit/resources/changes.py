@@ -120,10 +120,10 @@ def change_log(changes, change_set):
     return data
 
 
-def display_changes(changes, name, change_set):
+def display_changes(changes, change_set):
     """Shows changes for  change set or deploying a new template"""
-    click.echo("Gathering resources for : {}...".format(name))
     if change_set:
+        click.echo("\nChanges:")
         for change in change_log(changes=changes, change_set=change_set):
             # Dynamically gathers the length of each change in order to display information better
             action = sorted([len(item[0]) for item in change])[-1]
@@ -141,6 +141,6 @@ def display_changes(changes, name, change_set):
             click.echo("\t")
 
     else:
-        click.echo("Resources to be created:")
+        click.echo("\nResources to be created:")
         for change in change_log(changes=changes, change_set=change_set):
             click.echo("\t{}".format(change))

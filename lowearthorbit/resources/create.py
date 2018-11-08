@@ -89,8 +89,8 @@ def display_status(cfn_client, current_stack, stack_name):
     STACK_LIST.append({'StackId': current_stack['StackId'], 'StackName': stack_name})
     stack_description = cfn_client.describe_stacks(StackName=current_stack['StackId'])['Stacks'][0][
         'Description']
-    click.echo("\nCreating {}...".format(stack_name))
-    click.echo("Description of {}: \n\t{}".format(stack_name, stack_description))
+    click.echo("Description: \n\t{}".format(stack_description))
+    click.echo("\nCreating...")
     try:
         cfn_client.get_waiter('stack_create_complete').wait(StackName=current_stack['StackId'])
         click.echo("Created {}.".format(stack_name))
@@ -134,6 +134,8 @@ def create_stack(**kwargs):
     template_summary = cfn_client.get_template_summary(TemplateURL=template_url)
 
     stack_name = get_stack_name(job_identifier=job_identifier, obj=str(key_object).split("/")[-1].split(".")[0])
+    click.echo("\n{}:".format(stack_name))
+
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
     stack_parameters = gather_parameters(session=session,
@@ -153,16 +155,21 @@ def create_stack(**kwargs):
             # Checks for the changes
             change_set_details = cfn_client.describe_change_set(ChangeSetName=transformed_stack['Id'])
             change_set_changes = change_set_details['Changes']
-            display_changes(changes=change_set_changes, name=stack_name, change_set=True)
+            display_changes(changes=change_set_changes, change_set=True)
             transformed = True
 
         else:
-            cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url, Parameters=stack_parameters)['Url']
-            click.echo("Estimated template costs: {}".format(cost_url))
-            display_changes(changes=template_summary['ResourceTypes'], name=stack_name, change_set=False)
+            try:
+                cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
+                                                             Parameters=stack_parameters)['Url']
+            except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
+                cost_url = None
+
+            click.echo("Estimated template cost URL: {}".format(cost_url))
+            display_changes(changes=template_summary['ResourceTypes'], change_set=False)
 
         if gated:
-            execute_changes = click.confirm("Would you like to deploy?")
+            execute_changes = click.confirm("\nWould you like to deploy?")
             if execute_changes:
                 if transformed:
                     cfn_client.execute_change_set(ChangeSetName=transformed_stack['Id'],
