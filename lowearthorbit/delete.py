@@ -13,13 +13,14 @@ def delete_stacks(**kwargs):
     stack_names = sorted([stack['StackName'] for stack in cfn_client.describe_stacks()['Stacks'] if
                           "{}-".format(job_identifier) in stack['StackName']])
 
-    click.confirm("Do you want to delete these stacks? : %s" % stack_names)
-    for stack_name in reversed(stack_names):
-        cfn_client.delete_stack(StackName=stack_name)
-        try:
-            cfn_client.get_waiter('stack_delete_complete').wait(StackName=stack_name)
-            click.echo("Deleted {}.".format(stack_name))
-        except botocore.exceptions.WaiterError as waiter_error:
-            click.echo("{} failed to delete. {}".format(stack_name, waiter_error))
-            click.echo("Stopped stack deletion.")
-            break
+    choice = click.confirm("Do you want to delete these stacks? : %s" % stack_names)
+    if choice:
+        for stack_name in reversed(stack_names):
+            cfn_client.delete_stack(StackName=stack_name)
+            try:
+                cfn_client.get_waiter('stack_delete_complete').wait(StackName=stack_name)
+                click.echo("Deleted {}.".format(stack_name))
+            except botocore.exceptions.WaiterError as waiter_error:
+                click.echo("{} failed to delete. {}".format(stack_name, waiter_error))
+                click.echo("Stopped stack deletion.")
+                break
