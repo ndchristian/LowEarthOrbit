@@ -1,9 +1,5 @@
-import logging
-
 import botocore
 import click
-
-log = logging.getLogger(__name__)
 
 
 def delete_stacks(**kwargs):

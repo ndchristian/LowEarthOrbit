@@ -1,5 +1,4 @@
 import json
-import logging
 import sys
 import time
 
@@ -9,8 +8,6 @@ import click
 from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.changes import display_changes, change_set_delete_waiter
 from lowearthorbit.resources.parameters import gather as gather_parameters
-
-log = logging.getLogger(__name__)
 
 STACK_LIST = []
 
@@ -31,8 +28,6 @@ def get_stack_name(job_identifier, obj):
         else:
             stack_name_parts.append(s)
     stack_name = "".join(stack_name_parts)
-
-    log.debug('Created stack name: %s' % stack_name)
 
     return stack_name
 

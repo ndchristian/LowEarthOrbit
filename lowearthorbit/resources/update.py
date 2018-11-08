@@ -1,4 +1,3 @@
-import logging
 import time
 
 import botocore
@@ -7,8 +6,6 @@ import click
 from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.changes import display_changes, apply_changes, change_set_delete_waiter
 from lowearthorbit.resources.parameters import gather as gather_parameters
-
-log = logging.getLogger(__name__)
 
 
 def update_stack(**kwargs):

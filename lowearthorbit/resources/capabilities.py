@@ -1,8 +1,3 @@
-import logging
-
-log = logging.getLogger(__name__)
-
-
 def get(template_url, session):
     """Gets the needed capabilities for the CloudFormation stack """
 
@@ -16,5 +11,4 @@ def get(template_url, session):
         # May not be needed since it's not required when creating or updating a stack
         stack_capabilities = []
 
-    log.debug("Stack capabilities: %s" % stack_capabilities)
     return stack_capabilities

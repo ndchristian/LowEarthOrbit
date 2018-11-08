@@ -1,11 +1,8 @@
-import logging
 import sys
 import time
 
 import botocore
 import click
-
-log = logging.getLogger(__name__)
 
 
 def stack_continue_rollback_waiter(stack_name, cfn_client):

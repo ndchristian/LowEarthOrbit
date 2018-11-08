@@ -1,11 +1,8 @@
 from __future__ import print_function
 
-import logging
 import os
 
 import click
-
-log = logging.getLogger(__name__)
 
 
 def format_path(**kwargs):
@@ -19,8 +16,6 @@ def format_path(**kwargs):
 
 def upload_templates(**kwargs):
     """Uploads files with the standard CloudFormation file extensions to the specific bucket in """
-
-    log.debug('Uploading templates to S3')
 
     upload_parameters = {}
 
