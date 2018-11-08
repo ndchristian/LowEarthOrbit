@@ -27,15 +27,13 @@ def update_stack(**kwargs):
                                                     Params={'Bucket': bucket,
                                                             'Key': key_object},
                                                     ExpiresIn=60)
-
-    click.echo("\nCreating change set for {}...".format(stack_name))
-
+    click.echo("\n{}:".format(stack_name))
+    click.echo("Creating change set...")
     change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
     stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
                                          job_identifier=job_identifier)
-
     try:
         change_set = cfn_client.create_change_set(
             StackName=stack_name,
@@ -67,7 +65,15 @@ def update_stack(**kwargs):
     change_set_changes = change_set_details['Changes']
 
     if change_set_changes:
-        display_changes(changes=change_set_changes, name=change_set_name, change_set=True)
+        try:
+            cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
+                                                         Parameters=stack_parameters)['Url']
+        except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
+            cost_url = None
+
+        click.echo("Estimated template cost URL: {}".format(cost_url))
+
+        display_changes(changes=change_set_changes, change_set=True)
         # Acts as a filter on past resource failures
         past_failures = [stack_event for stack_event in
                          cfn_client.describe_stack_events(StackName=stack_name)['StackEvents'] if
