@@ -9,7 +9,7 @@ from lowearthorbit.resources.changes import display_changes
 from lowearthorbit.resources.parameters import gather
 
 
-def create_plan(session, bucket, s3_object_key, job_identifier, parameters, template_url, stack_name):
+def create_plan(session, bucket, s3_object_key, job_identifier, parameters, template_url):
     """Shows a plan of what CloudFormation might create and how much it might cost"""
 
     cfn_client = session.client('cloudformation')
@@ -25,7 +25,7 @@ def create_plan(session, bucket, s3_object_key, job_identifier, parameters, temp
         cost_url = None
 
     click.echo("Estimated template cost URL: {}".format(cost_url))
-    display_changes(changes=template_summary['ResourceTypes'], name=stack_name, change_set=False)
+    display_changes(changes=template_summary['ResourceTypes'], change_set=False)
 
 
 def update_plan(session, stack_name, s3_object_key, template_url, job_identifier, parameters, bucket):
@@ -76,11 +76,11 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
     try:
         cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
                                                      Parameters=stack_parameters)['Url']
-    except botocore.exceptions.ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
         cost_url = None
     click.echo("Estimated template costs: {}".format(cost_url))
     if change_set_changes:
-        display_changes(changes=change_set_changes, name=change_set_name, change_set=True)
+        display_changes(changes=change_set_changes, change_set=True)
     else:
         click.echo("No changes to be found")
 
@@ -131,8 +131,7 @@ def plan_deployment(**kwargs):
                             s3_object_key=s3_object['Key'],
                             job_identifier=job_identifier,
                             parameters=parameters,
-                            template_url=template_url,
-                            stack_name=stack_name)
+                            template_url=template_url)
 
             # Allows LEO to progress in the assigned order
             stack_counter += 1
