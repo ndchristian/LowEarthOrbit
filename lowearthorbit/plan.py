@@ -1,4 +1,3 @@
-import logging
 import time
 
 import botocore
@@ -8,8 +7,6 @@ from lowearthorbit.deploy import deploy_type
 from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.changes import display_changes
 from lowearthorbit.resources.parameters import gather
-
-log = logging.getLogger(__name__)
 
 
 def create_plan(session, bucket, s3_object_key, job_identifier, parameters, template_url, stack_name):
@@ -24,9 +21,8 @@ def create_plan(session, bucket, s3_object_key, job_identifier, parameters, temp
     try:
         cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
                                                      Parameters=stack_parameters)['Url']
-    except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
         cost_url = None
-        log.warning(e)
 
     click.echo("Estimated template cost URL: {}".format(cost_url))
     display_changes(changes=template_summary['ResourceTypes'], name=stack_name, change_set=False)
@@ -82,7 +78,6 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
                                                      Parameters=stack_parameters)['Url']
     except botocore.exceptions.ClientError as e:
         cost_url = None
-        log.warning(e)
     click.echo("Estimated template costs: {}".format(cost_url))
     if change_set_changes:
         display_changes(changes=change_set_changes, name=change_set_name, change_set=True)

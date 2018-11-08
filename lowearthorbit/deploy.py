@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 def deploy_type(stack_name, cfn_client):
     """Checks if the CloudFormation stack should be created or updated"""
 
-    log.debug('Gathering deploy type')
     for stack in cfn_client.describe_stacks()['Stacks']:
         try:
             if stack_name == stack['StackName']:
@@ -23,8 +22,6 @@ def deploy_type(stack_name, cfn_client):
 
 def deploy_templates(**kwargs):
     """Creates or updates CloudFormation stacks"""
-
-    log.debug('Deploying templates')
 
     # Parameters to find the templates in specified S3 bucket
     objects_parameters = {}
@@ -58,7 +55,6 @@ def deploy_templates(**kwargs):
             check = deploy_type(stack_name=stack_name,
                                 cfn_client=cfn_client)
             # If stack name exists it will update, else it will create
-            log.debug("Update check: %".format(check))
             if check['Update']:
                 try:
                     stack = update_stack(update_stack_name=check['UpdateStackName'],

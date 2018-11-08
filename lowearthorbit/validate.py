@@ -11,8 +11,6 @@ log = logging.getLogger(__name__)
 def validate_templates(**kwargs):
     """"Attempts to validate every file in the bucket subdirectory with every known CloudFormation extension."""
 
-    log.debug("Validating templates")
-
     validate_parameters = {}
     if 'bucket' in kwargs:
         validate_parameters.update({'Bucket': kwargs['bucket']})

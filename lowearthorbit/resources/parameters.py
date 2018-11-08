@@ -1,14 +1,9 @@
-import logging
-
 import click
-
-log = logging.getLogger(__name__)
 
 
 def remove_parameters(all_parameters, template_parameters):
     """Removes all parameters that the template does not need."""
     template_parameter_keys = [p['ParameterKey'] for p in template_parameters]
-    log.debug("TEMPLATE PARAMETER KEYS: {}".format(template_parameter_keys))
     template_parameters = []
     for parameter in all_parameters:
         if parameter['ParameterKey'] in template_parameter_keys:
@@ -81,19 +76,14 @@ def gather(session, key_object, parameters, bucket, job_identifier):
 
     slimmed_parameters = remove_parameters(all_parameters=parameters,
                                            template_parameters=template_summary['Parameters'])
-    log.debug('Removed unneeded parameters')
 
     full_parameters = add_absent_parameters(parameters=slimmed_parameters,
                                             template_parameters=template_summary['Parameters'])
-    log.debug('Added needed parameters')
 
     outputs_parameters = add_output_values(cfn_client=cfn_client,
                                            job_identifier=job_identifier,
                                            parameters=full_parameters)
-    log.debug('Added output values to parameter values')
 
     completed_parameters = add_input_parameter_values(parameters=outputs_parameters)
-    log.debug('Added user input parameter values')
 
-    log.debug("Completed parameters: {}".format(completed_parameters))
     return completed_parameters
