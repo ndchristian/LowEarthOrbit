@@ -387,8 +387,9 @@ def edit_config(name, bucket, prefix, gated, local_path, job_identifier, paramet
 def delete_config(name):
     """Deletes a configuration"""
 
+    config_parser.read("%s/.leo" % os.path.expanduser("~"))
+    config_parser.remove_section(name)
     with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
-        config_parser.remove_section(name)
         config_parser.write(config_file)
 
 
