@@ -85,10 +85,16 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 @cli.command()
 @click.option('--job-identifier', type=click.STRING, required=True,
               help='Prefix that is used to identify stacks to delete')
+@click.option('--name', type=click.STRING,
+              help='Name of the configuration to use')
 @pass_config
-def delete(config, job_identifier):
+def delete(config, job_identifier, name):
     """Deletes all stacks with the given job identifier"""
     delete_arguments = {}
+
+    if name is not None:
+        pass  # Parsing of config file later
+
     delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
     try:
         log.debug('Delete arguments: {}'.format(delete_arguments))
@@ -117,10 +123,17 @@ def delete(config, job_identifier):
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
+@click.option('--name', type=click.STRING,
+              help='Name of the configuration to use')
 @pass_config
-def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags):
+def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags,
+           name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
+
+    if name is not None:
+        pass  # Parsing of config file later
+
     deploy_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
                                         'job_identifier': job_identifier, 'parameters': parameters,
                                         'notification_arns': notification_arns,
@@ -143,10 +156,16 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
               help='Prefix that is used to identify stacks')
 @click.option('--parameters', cls=LiteralOption, default=[],
               help='All parameters that are needed to create an accurate plan.')
+@click.option('--name', type=click.STRING,
+              help='Name of the configuration to use')
 @pass_config
-def plan(config, bucket, prefix, job_identifier, parameters):
+def plan(config, bucket, prefix, job_identifier, parameters, name):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
     plan_arguments = {}
+
+    if name is not None:
+        pass  # Parsing of config file later
+
     plan_arguments.update(
         parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
                     'parameters': parameters}))
@@ -165,10 +184,16 @@ def plan(config, bucket, prefix, job_identifier, parameters):
               help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
 @click.option('--local-path', type=click.Path(exists=True), required=True,
               help='Local path where CloudFormation templates are located.')
+@click.option('--name', type=click.STRING,
+              help='Name of the configuration to use')
 @pass_config
-def upload(config, bucket, prefix, local_path):
+def upload(config, bucket, prefix, local_path, name):
     """Uploads all templates to S3"""
     upload_arguments = {}
+
+    if name is not None:
+        pass  # Parsing of config file later
+
     upload_arguments.update(
         parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
     try:
@@ -184,10 +209,16 @@ def upload(config, bucket, prefix, local_path):
               help="S3 bucket that has the CloudFormation templates.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option('--name', type=click.STRING,
+              help='Name of the configuration to use')
 @pass_config
-def validate(config, bucket, prefix):
+def validate(config, bucket, prefix, name):
     """Validates all templates"""
     validate_arguments = {}
+
+    if name is not None:
+        pass  # Parsing of config file later
+
     validate_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix}))
     # Displays all validation errors
     try:
