@@ -87,12 +87,8 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 @pass_config
 def delete(config, job_identifier):
     """Deletes all stacks with the given job identifier"""
-
-    delete_arguments = locals()
-
-    # config.session, not config should be passed
-    del delete_arguments['config']
-    delete_arguments.update({'session': config.session})
+    delete_arguments = {}
+    delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
     try:
         log.debug('Delete arguments: {}'.format(delete_arguments))
         exit(delete_stacks(**delete_arguments))
@@ -123,13 +119,12 @@ def delete(config, job_identifier):
 @pass_config
 def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags):
     """Creates or updates cloudformation stacks"""
-
-    deploy_arguments = parse_args(arguments=locals())
-
-    # config.session, not config should be passed
-    del deploy_arguments['config']
-    deploy_arguments.update({'session': config.session})
-
+    deploy_arguments = {}
+    deploy_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
+                                        'job_identifier': job_identifier, 'parameters': parameters,
+                                        'notification_arns': notification_arns,
+                                        'rollback_configuration': rollback_configuration,
+                                        'tags': tags}))
     try:
         log.debug('Deploy arguments: {}'.format(deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
@@ -150,13 +145,10 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
 @pass_config
 def plan(config, bucket, prefix, job_identifier, parameters):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
-
-    plan_arguments = parse_args(arguments=locals())
-
-    # config.session, not config should be passed
-    del plan_arguments['config']
-    plan_arguments.update({'session': config.session})
-
+    plan_arguments = {}
+    plan_arguments.update(
+        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
+                    'parameters': parameters}))
     try:
         log.debug("Plan arguments: {}".format(plan_arguments))
         exit(plan_deployment(**plan_arguments))
@@ -175,13 +167,9 @@ def plan(config, bucket, prefix, job_identifier, parameters):
 @pass_config
 def upload(config, bucket, prefix, local_path):
     """Uploads all templates to S3"""
-
-    upload_arguments = parse_args(arguments=locals())
-
-    # config.session, not config should be passed
-    del upload_arguments['config']
-    upload_arguments.update({'session': config.session})
-
+    upload_arguments = {}
+    upload_arguments.update(
+        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
     try:
         log.debug("Upload arguments: {}".format(upload_arguments))
         exit(upload_templates(**upload_arguments))
@@ -198,12 +186,8 @@ def upload(config, bucket, prefix, local_path):
 @pass_config
 def validate(config, bucket, prefix):
     """Validates all templates"""
-    validate_arguments = parse_args(arguments=locals())
-
-    # config.session, not config should be passed
-    del validate_arguments['config']
-    validate_arguments.update({'session': config.session})
-
+    validate_arguments = {}
+    validate_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix}))
     # Displays all validation errors
     try:
         log.debug("Validate arguments: {}".format(validate_arguments))
