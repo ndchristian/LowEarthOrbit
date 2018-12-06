@@ -220,6 +220,8 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     # Click defaults were overriding config values
     if parameters is None and 'parameters' not in plan_arguments:
         parameters = []
+    if job_identifier is None and 'job_identifier' not in plan_arguments:
+        job_identifier = ''
 
     plan_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
