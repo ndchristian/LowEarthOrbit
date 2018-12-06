@@ -286,6 +286,9 @@ def validate(config, bucket, prefix, config_name):
     validate_arguments.update(
         parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
 
+    if bucket is None and 'bucket' not in upload_arguments:
+        raise click.ClickException("Bucket does not have a value.")
+
     # Displays all validation errors
     try:
         log.debug("Validate arguments: {}".format(validate_arguments))
