@@ -254,6 +254,11 @@ def upload(config, bucket, prefix, local_path, config_name):
         upload_arguments.update(dict(config_parser[config_name]))
     upload_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
+    # Click defaults were overriding config values
+    if bucket is None and 'bucket' not in upload_arguments:
+        raise click.ClickException("Bucket does not have a value.")
+    if local_path is None and 'local_path' not in upload_arguments:
+        raise click.ClickException("local-path does not have a value.")
 
     try:
         log.debug("Upload arguments: {}".format(upload_arguments))
