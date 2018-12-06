@@ -404,7 +404,7 @@ Name of the config to be used. This is required unless *--bucket* is used.
 
 
 
-### create_config
+### create-config
 
 #### Description:
 
@@ -413,7 +413,7 @@ Creates a configuration entry that stores all given values.
 #### Synopsis:
 
 ```
-create_config
+create-config
 --bucket <value>
 --prefix <value>
 --gated <value>
@@ -545,7 +545,7 @@ Name of the config.
 
 
 
-### edit_config
+### edit-config
 
 #### Description:
 
@@ -554,7 +554,7 @@ Edits an already existing configuration. Any values specified will replace the v
 #### Synopsis:
 
 ```
-edit_config
+edit-config
 --bucket <value>
 --prefix <value>
 --gated <value>
@@ -684,7 +684,7 @@ Name of the config.
 
 ------
 
-### delete_config
+### delete-config
 
 #### Description:
 
@@ -693,7 +693,7 @@ Deletes a configuration.
 #### Synopsis:
 
 ```
-delete_config
+delete-config
 --config-name <value>
 ```
 
@@ -705,7 +705,7 @@ Name of the config.
 
 ------
 
-### list_configs
+### list-configs
 
 #### Description:
 
@@ -714,7 +714,7 @@ List all configuration names. If *--config-name* is specified it will show the v
 #### Synopsis:
 
 ```
-list_configs
+list-configs
 --config-name <value>
 ```
 
@@ -762,24 +762,24 @@ leo validate --bucket foobucket
 ##### *To create a config:*
 
 ```
-leo create_config --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
+leo create-config --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
 ```
 
 ##### *To edit a config:*
 
 ```
-leo edit_config --bucket barbucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
+leo edit-config --bucket barbucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
 ```
 
 ##### *To delete a config:*
 
 ```
-leo delete_config --config_name fooconfig
+leo delete-config --config-name fooconfig
 ```
 
 ##### *To list all configs:*
 
 ```
-leo list_configs
+leo list-configs
 ```
 
