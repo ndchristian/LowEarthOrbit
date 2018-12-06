@@ -103,7 +103,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
         session_arguments = {}
         session_arguments.update(parse_args(
             {'aws_access_key_id': aws_access_key_id, 'aws_secret_access_key': aws_secret_access_key,
-             'aws_session_token': aws_session_token, 'botocore_session': botocore_session, 'profile': profile,
+             'aws_session_token': aws_session_token, 'botocore_session': botocore_session, 'profile_name': profile,
              'region_name': region}))
 
         log.debug("Boto session arguments : {}".format(session_arguments))
@@ -116,7 +116,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 @cli.command()
 @click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is used to identify stacks to delete')
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def delete(config, job_identifier, config_name):
@@ -157,7 +157,7 @@ def delete(config, job_identifier, config_name):
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags,
@@ -201,7 +201,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
               help='Prefix that is used to identify stacks')
 @click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def plan(config, bucket, prefix, job_identifier, parameters, config_name):
@@ -240,7 +240,7 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
               help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
 @click.option('--local-path', type=click.Path(exists=True), cls=NotRequiredIf, not_required_if='config_name',
               help='Local path where CloudFormation templates are located.')
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def upload(config, bucket, prefix, local_path, config_name):
@@ -266,7 +266,7 @@ def upload(config, bucket, prefix, local_path, config_name):
               help="S3 bucket that has the CloudFormation templates.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def validate(config, bucket, prefix, config_name):
@@ -295,7 +295,7 @@ def validate(config, bucket, prefix, config_name):
 # Config arguments
 
 @cli.command()
-@click.option('--config_name', type=click.STRING, required=True,
+@click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
@@ -339,7 +339,7 @@ def create_config(config_name, bucket, prefix, gated, local_path, job_identifier
 
 
 @cli.command()
-@click.option('--config_name', type=click.STRING, required=True,
+@click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
@@ -382,7 +382,7 @@ def edit_config(config_name, bucket, prefix, gated, local_path, job_identifier, 
 
 
 @cli.command()
-@click.option('--config_name', type=click.STRING, required=True,
+@click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
 def delete_config(config_name):
     """Deletes a configuration"""
@@ -394,7 +394,7 @@ def delete_config(config_name):
 
 
 @cli.command()
-@click.option('--config_name', type=click.STRING,
+@click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 def list_configs(config_name):
     """Lists all configurations or if the config_name is specified, the values of a configuration"""
