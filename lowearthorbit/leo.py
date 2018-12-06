@@ -114,19 +114,19 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 
 
 @cli.command()
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is used to identify stacks to delete')
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
-def delete(config, job_identifier, name):
+def delete(config, job_identifier, config_name):
     """Deletes all stacks with the given job identifier"""
     delete_arguments = {}
     delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
-    if name is not None:
+    if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        delete_arguments.update(dict(config_parser[name]))
+        delete_arguments.update(dict(config_parser[config_name]))
 
     delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
 
@@ -139,13 +139,13 @@ def delete(config, job_identifier, name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help="S3 bucket that has the CloudFormation templates.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is added on to the deployed stack names')
 @click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to deploy with.')
@@ -157,17 +157,17 @@ def delete(config, job_identifier, name):
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
 def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags,
-           name):
+           config_name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
-    if name is not None:
+    if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        for key, value in dict(config_parser[name]).items():
+        for key, value in dict(config_parser[config_name]).items():
             try:
                 deploy_arguments.update({key: ast.literal_eval(value)})
             except (ValueError, SyntaxError):
@@ -193,25 +193,25 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help="S3 bucket that has the CloudFormation templates.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is used to identify stacks')
 @click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
-def plan(config, bucket, prefix, job_identifier, parameters, name):
+def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
     plan_arguments = {}
 
-    if name is not None:
+    if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        for key, value in dict(config_parser[name]).items():
+        for key, value in dict(config_parser[config_name]).items():
             try:
                 plan_arguments.update({key: ast.literal_eval(value)})
             except (ValueError, SyntaxError):
@@ -234,22 +234,22 @@ def plan(config, bucket, prefix, job_identifier, parameters, name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help="S3 bucket that the CloudFormation templates will be uploaded to.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
-@click.option('--local-path', type=click.Path(exists=True), cls=NotRequiredIf, not_required_if='name',
+@click.option('--local-path', type=click.Path(exists=True), cls=NotRequiredIf, not_required_if='config_name',
               help='Local path where CloudFormation templates are located.')
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
-def upload(config, bucket, prefix, local_path, name):
+def upload(config, bucket, prefix, local_path, config_name):
     """Uploads all templates to S3"""
     upload_arguments = {}
 
-    if name is not None:
+    if config_name is not None:
         config_parser.read("{}/.leo".format(os.path.expanduser("~")))
-        upload_arguments.update(dict(config_parser[name]))
+        upload_arguments.update(dict(config_parser[config_name]))
     upload_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
 
@@ -262,19 +262,19 @@ def upload(config, bucket, prefix, local_path, name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='name',
+@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help="S3 bucket that has the CloudFormation templates.")
 @click.option('--prefix', type=click.STRING,
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
-def validate(config, bucket, prefix, name):
+def validate(config, bucket, prefix, config_name):
     """Validates all templates"""
     validate_arguments = {}
 
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
-    validate_arguments.update(dict(config_parser[name]))
+    validate_arguments.update(dict(config_parser[config_name]))
 
     validate_arguments.update(
         parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
@@ -295,7 +295,7 @@ def validate(config, bucket, prefix, name):
 # Config arguments
 
 @cli.command()
-@click.option('--name', type=click.STRING, required=True,
+@click.option('--config_name', type=click.STRING, required=True,
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
@@ -317,7 +317,7 @@ def validate(config, bucket, prefix, name):
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks.')
-def create_config(name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
+def create_config(config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
                   rollback_configuration, tags):
     """Creates a configuration"""
     create_config_values = {}
@@ -331,15 +331,15 @@ def create_config(name, bucket, prefix, gated, local_path, job_identifier, param
     leo_path = "%s/.leo" % os.path.expanduser("~")
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
-        config_parser.add_section(name)
+        config_parser.add_section(config_name)
         for key, value in create_config_values.items():
-            if key is not 'name':
-                config_parser.set(name, key, str(value))
+            if key is not 'config_name':
+                config_parser.set(config_name, key, str(value))
         config_parser.write(config_file)
 
 
 @cli.command()
-@click.option('--name', type=click.STRING, required=True,
+@click.option('--config_name', type=click.STRING, required=True,
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
@@ -361,7 +361,7 @@ def create_config(name, bucket, prefix, gated, local_path, job_identifier, param
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
-def edit_config(name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
+def edit_config(config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
                 rollback_configuration, tags):
     """Edits a configuration"""
     edit_config_values = {}
@@ -376,34 +376,34 @@ def edit_config(name, bucket, prefix, gated, local_path, job_identifier, paramet
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
         for key, value in edit_config_values.items():
-            if key is not 'name':
-                config_parser.set(name, key, str(value))
+            if key is not 'config_name':
+                config_parser.set(config_name, key, str(value))
         config_parser.write(config_file)
 
 
 @cli.command()
-@click.option('--name', type=click.STRING, required=True,
+@click.option('--config_name', type=click.STRING, required=True,
               help="Name of the configuration.")
-def delete_config(name):
+def delete_config(config_name):
     """Deletes a configuration"""
 
     config_parser.read("%s/.leo" % os.path.expanduser("~"))
-    config_parser.remove_section(name)
+    config_parser.remove_section(config_name)
     with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
         config_parser.write(config_file)
 
 
 @cli.command()
-@click.option('--name', type=click.STRING,
+@click.option('--config_name', type=click.STRING,
               help="Name of the configuration.")
-def list_configs(name):
-    """Lists all configurations or if the name is specified, the values of a configuration"""
+def list_configs(config_name):
+    """Lists all configurations or if the config_name is specified, the values of a configuration"""
 
     config_parser._interpolation = configparser.ExtendedInterpolation()
     config_parser.read("%s/.leo" % os.path.expanduser("~"))
 
     sections = config_parser.sections()
-    if name is None:
+    if config_name is None:
         if sections:
             for section in sections:
                 click.echo(section)
@@ -411,9 +411,9 @@ def list_configs(name):
             click.echo("No configs found")
     else:
         try:
-            options = config_parser.options(name)
-            click.echo("[%s]\n" % name)
+            options = config_parser.options(config_name)
+            click.echo("[%s]\n" % config_name)
             for option in options:
-                click.echo("{} = {}".format(option, config_parser.get(name, option)))
+                click.echo("{} = {}".format(option, config_parser.get(config_name, option)))
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % name)
+            click.echo('No config called "%s" found' % config_name)
