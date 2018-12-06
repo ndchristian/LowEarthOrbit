@@ -317,7 +317,8 @@ def validate(config, bucket, prefix, config_name):
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks.')
-def create_config(config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
+@pass_config
+def create_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
                   rollback_configuration, tags):
     """Creates a configuration"""
     create_config_values = {}
@@ -361,7 +362,8 @@ def create_config(config_name, bucket, prefix, gated, local_path, job_identifier
                    'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
-def edit_config(config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
+@pass_config
+def edit_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
                 rollback_configuration, tags):
     """Edits a configuration"""
     edit_config_values = {}
@@ -384,7 +386,8 @@ def edit_config(config_name, bucket, prefix, gated, local_path, job_identifier, 
 @cli.command()
 @click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
-def delete_config(config_name):
+@pass_config
+def delete_config(config, config_name):
     """Deletes a configuration"""
 
     config_parser.read("%s/.leo" % os.path.expanduser("~"))
@@ -396,7 +399,8 @@ def delete_config(config_name):
 @cli.command()
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
-def list_configs(config_name):
+@pass_config
+def list_configs(config, config_name):
     """Lists all configurations or if the config_name is specified, the values of a configuration"""
 
     config_parser._interpolation = configparser.ExtendedInterpolation()
