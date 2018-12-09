@@ -16,7 +16,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-config_parser = configparser.ConfigParser()
+config_parser = configparser.RawConfigParser()
 
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
@@ -122,13 +122,21 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 def delete(config, job_identifier, config_name):
     """Deletes all stacks with the given job identifier"""
     delete_arguments = {}
-    delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
+
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        delete_arguments.update(dict(config_parser[config_name]))
+        try:
+            options = config_parser.options(config_name)
+            for option in options:
+                delete_arguments.update({option: config_parser.get(config_name, option)})
+        except configparser.NoSectionError:
+            click.echo('No config called "%s" found' % config_name)
 
-    delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
+        if job_identifier is None and 'job_identifier' not in delete_arguments:
+            raise click.ClickException("No job identifier specified")
+
+    delete_arguments.update(parse_args({'session': config.session, 'job_identifier': job_identifier}))
 
     try:
         log.debug('Delete arguments: {}'.format(delete_arguments))
@@ -164,20 +172,27 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
            config_name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
+
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        for key, value in dict(config_parser[config_name]).items():
-            try:
-                deploy_arguments.update({key: ast.literal_eval(value)})
-            except (ValueError, SyntaxError):
-                deploy_arguments.update({key: value})
+        try:
+            options = config_parser.options(config_name)
+            for option in options:
+                try:
+                    deploy_arguments.update({option: ast.literal_eval(config_parser.get(config_name, option))})
+                except (ValueError, SyntaxError):
+                    deploy_arguments.update({option: config_parser.get(config_name, option)})
+        except configparser.NoSectionError:
+            click.echo('No config called "%s" found' % config_name)
 
     # Click defaults were overriding config values
     if parameters is None and 'parameters' not in deploy_arguments:
         parameters = []
     if gated is None and 'gated' not in deploy_arguments:
         gated = False
+    if job_identifier is None and 'job_identifier' not in deploy_arguments:
+        raise click.ClickException("job-identifier does not have a value.")
 
     deploy_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
@@ -211,17 +226,21 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
-        for key, value in dict(config_parser[config_name]).items():
-            try:
-                plan_arguments.update({key: ast.literal_eval(value)})
-            except (ValueError, SyntaxError):
-                plan_arguments.update({key: value})
+        try:
+            options = config_parser.options(config_name)
+            for option in options:
+                try:
+                    plan_arguments.update({option: ast.literal_eval(config_parser.get(config_name, option))})
+                except (ValueError, SyntaxError):
+                    plan_arguments.update({option: config_parser.get(config_name, option)})
+        except configparser.NoSectionError:
+            click.echo('No config called "%s" found' % config_name)
 
     # Click defaults were overriding config values
     if parameters is None and 'parameters' not in plan_arguments:
         parameters = []
     if job_identifier is None and 'job_identifier' not in plan_arguments:
-        job_identifier = ''
+        raise click.ClickException("job-identifier does not have a value.")
 
     plan_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
@@ -251,9 +270,16 @@ def upload(config, bucket, prefix, local_path, config_name):
 
     if config_name is not None:
         config_parser.read("{}/.leo".format(os.path.expanduser("~")))
-        upload_arguments.update(dict(config_parser[config_name]))
+        try:
+            options = config_parser.options(config_name)
+            for option in options:
+                upload_arguments.update({option: config_parser.get(config_name, option)})
+        except configparser.NoSectionError:
+            click.echo('No config called "%s" found' % config_name)
+
     upload_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
+
     # Click defaults were overriding config values
     if bucket is None and 'bucket' not in upload_arguments:
         raise click.ClickException("Bucket does not have a value.")
@@ -281,12 +307,17 @@ def validate(config, bucket, prefix, config_name):
     validate_arguments = {}
 
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
-    validate_arguments.update(dict(config_parser[config_name]))
+    try:
+        options = config_parser.options(config_name)
+        for option in options:
+            validate_arguments.update({option: config_parser.get(config_name, option)})
+    except configparser.NoSectionError:
+        click.echo('No config called "%s" found' % config_name)
 
     validate_arguments.update(
         parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
 
-    if bucket is None and 'bucket' not in upload_arguments:
+    if bucket is None and 'bucket' not in validate_arguments:
         raise click.ClickException("Bucket does not have a value.")
 
     # Displays all validation errors
@@ -413,7 +444,6 @@ def delete_config(config, config_name):
 def list_configs(config, config_name):
     """Lists all configurations or if the config_name is specified, the values of a configuration"""
 
-    config_parser._interpolation = configparser.ExtendedInterpolation()
     config_parser.read("%s/.leo" % os.path.expanduser("~"))
 
     sections = config_parser.sections()
