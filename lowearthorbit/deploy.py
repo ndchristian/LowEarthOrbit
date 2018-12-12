@@ -30,8 +30,8 @@ def deploy_templates(**kwargs):
         objects_parameters.update({'Prefix': kwargs['prefix']})
 
     deploy_parameters = {}
-    if 'tags' in kwargs:
-        deploy_parameters.update({'tags': kwargs['tags']})
+    if 'Tags' in kwargs:
+        deploy_parameters.update({'Tags': kwargs['Tags']})
     if 'rollback_configuration' in kwargs:
         deploy_parameters.update({'rollback_configuration': kwargs['rollback_configuration']})
     if 'notification_arns' in kwargs:
