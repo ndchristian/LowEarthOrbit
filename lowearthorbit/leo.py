@@ -198,7 +198,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
                    'job_identifier': job_identifier,
                    'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'tags': tags}))
+                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
     try:
         log.debug('Deploy arguments: {}'.format(deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
@@ -368,7 +368,7 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
         arguments={'bucket': bucket, 'prefix': prefix, 'gated': gated, 'local_path': local_path,
                    'job_identifier': job_identifier,
                    'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'tags': tags}))
+                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
 
     leo_path = "%s/.leo" % os.path.expanduser("~")
     config_parser.read(leo_path)  # preserves previously written sections
@@ -413,7 +413,7 @@ def edit_config(config, config_name, bucket, prefix, gated, local_path, job_iden
         arguments={'bucket': bucket, 'prefix': prefix, 'gated': gated, 'local_path': local_path,
                    'job_identifier': job_identifier,
                    'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'tags': tags}))
+                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
 
     leo_path = "%s/.leo" % os.path.expanduser("~")
     config_parser.read(leo_path)  # preserves previously written sections
