@@ -42,19 +42,9 @@ However, the recommended way is to install [aws-cli](https://github.com/aws/aws-
 
 More about [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html).
 
+Leo creates a file called *.leo* at `~/.leo` on Linux, macOS, or Unix, or at `C:\Users\*USERNAME*\.leo` on Windows. This is for specifically Leo config commands.
 
-
-## Synopsis
-
-`leo [options] <command> [parameters]`
-
-Use *leo --help* for all options and commands or *leo \<command\> --help* for specific command parameters.
-
-
-
-When creating a config, leo creates a file called *.leo* at `~/.leo` on Linux, macOS, or Unix, or at `C:\Users\*USERNAME*\.leo` on Windows. 
-
-*Templates must be numbered in the order to be deployed in.*
+In Leo, templates must be numbered in the order to be deployed in.
 
 *Example:*
 
@@ -63,6 +53,12 @@ When creating a config, leo creates a file called *.leo* at `~/.leo` on Linux, m
 01-template.yml
 02-template.yml
 ```
+
+## Synopsis
+
+`leo [options] <command> [parameters]`
+
+Use *leo --help* for all options and commands or *leo \<command\> --help* for specific command parameters.
 
 ## Options
 
@@ -113,7 +109,7 @@ delete
 
 #### Options:
 
-*--job-identifer (String)*
+*--job-identifier (String)*
 
 Identifies which stack(s) to delete. This is required unless *--config-name* is used.
 
@@ -128,6 +124,17 @@ Name of the config to use. This is required unless *--job-identifier* is used.
 ***Note:***
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
+
+#### Example:
+
+##### *To delete a stack or stacks:*
+
+```
+leo --region us-west-2 delete --job-identifier jobident
+```
+
+------
+
 
 
 ### deploy
@@ -163,7 +170,7 @@ The location within the bucket where the CloudFormation templates are.
 
 *--gated (Boolean)*
 
-Default is 'False'. If set to 'True' a prompt asking to deploy will be displayed everytime a stack is ready
+Default is 'False'. If set to 'True' a prompt asking to deploy will be displayed every time a stack is ready
 
 *--job-identifier (String)*
 
@@ -262,6 +269,14 @@ Name of the config to be used. This is required unless *--bucket* and/or *--job-
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
+#### Example:
+
+##### *To deploy stack(s):*
+
+```
+leo deploy --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
+```
+
 ----------------------------
 
 ### plan
@@ -325,6 +340,14 @@ Name of the config to be used. This is required unless *--bucket* and/or *--job-
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
+#### Example:
+
+##### *To plan for a deployment*
+
+```
+leo plan --config-name fooconfig
+```
+
 ----------------------------
 
 ### upload
@@ -365,6 +388,16 @@ Name of the config to be used. This is required unless *--bucket* and/or *--loca
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
+#### Example:
+
+#### Examples:
+
+##### *To upload CloudFormation templates:*
+
+```
+leo upload --bucket foobucket --localpath /path/to/templates/
+```
+
 ----------------------------
 
 ### validate
@@ -400,9 +433,13 @@ Name of the config to be used. This is required unless *--bucket* is used.
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-------
+#### Example:
 
+##### *To validate templates:*
 
+```
+leo validate --bucket foobucket
+```
 
 ### create-config
 
@@ -438,7 +475,7 @@ The location within the bucket where the CloudFormation templates are.
 
 *--gated (Boolean)*
 
-If set to 'True' a prompt asking to deploy will be displayed everytime a stack is ready
+If set to 'True' a prompt asking to deploy will be displayed every time a stack is ready
 
 *--local-path (String)*
 
@@ -541,9 +578,13 @@ Name of the config.
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-------
+#### Example:
 
+##### *To create a config:*
 
+```
+leo create-config --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
+```
 
 ### edit-config
 
@@ -579,7 +620,7 @@ The location within the bucket where the CloudFormation templates are.
 
 *--gated (Boolean)*
 
-If set to 'True' a prompt asking to deploy will be displayed everytime a stack is ready
+If set to 'True' a prompt asking to deploy will be displayed every time a stack is ready
 
 *--local-path (String)*
 
@@ -682,6 +723,14 @@ Name of the config.
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
+#### Example:
+
+##### *To edit a config:*
+
+```
+leo edit-config --bucket barbucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
+```
+
 ------
 
 ### delete-config
@@ -702,6 +751,15 @@ delete-config
 *--config-name (String)*
 
 Name of the config.
+
+#### Example:
+
+##### *To delete a config:*
+
+```
+leo delete-config --config-name fooconfig
+
+```
 
 ------
 
@@ -724,62 +782,17 @@ list-configs
 
 Name of the config.
 
-----------------------------
-
-Examples:
-----------------------------
-
-##### *To delete a stack or stacks:*
-
-```
-leo --region us-west-2 delete --job-identifier jobident
-```
-
-##### *To deploy stack(s):*
-
-```
-leo deploy --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
-```
-
-##### *To plan for a deployment*
-
-```
-leo plan --config-name fooconfig
-```
-
-##### *To upload CloudFormation templates:*
-
-```
-leo upload --bucket foobucket --localpath /path/to/templates/
-```
-
-##### *To validate templates:*
-
-```
-leo validate --bucket foobucket
-```
-
-##### *To create a config:*
-
-```
-leo create-config --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
-```
-
-##### *To edit a config:*
-
-```
-leo edit-config --bucket barbucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
-```
-
-##### *To delete a config:*
-
-```
-leo delete-config --config-name fooconfig
-```
+#### Examples:
 
 ##### *To list all configs:*
 
 ```
 leo list-configs
+```
+
+##### To show a specific config contents:
+
+```
+leo list-configs --config-name fooconfig
 ```
 
