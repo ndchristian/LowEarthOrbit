@@ -42,6 +42,9 @@ class JsonParamType(click.ParamType):
 class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
         """Turns JSON input into a data structure Python can work with"""
+        if 'file://' in value:
+            with open(os.path.expanduser(value.split('file://')[1]), 'r') as json_structure:
+                value = json_structure.read()
         try:
             return ast.literal_eval(value)
         except (SyntaxError, ValueError):
