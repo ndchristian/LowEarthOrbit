@@ -14,6 +14,7 @@ from lowearthorbit.validate import validate_templates
 try:
     import configparser
 except ImportError:
+    # noinspection PyPep8Naming,PyUnresolvedReferences
     import ConfigParser as configparser
 
 config_parser = configparser.RawConfigParser()
@@ -333,6 +334,7 @@ def validate(config, bucket, prefix, config_name):
 
 # Config arguments
 
+# noinspection PyUnusedLocal
 @cli.command()
 @click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
@@ -378,6 +380,7 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
         config_parser.write(config_file)
 
 
+# noinspection PyUnusedLocal
 @cli.command()
 @click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
@@ -422,6 +425,7 @@ def edit_config(config, config_name, bucket, prefix, gated, local_path, job_iden
         config_parser.write(config_file)
 
 
+# noinspection PyUnusedLocal
 @cli.command()
 @click.option('--config-name', type=click.STRING, required=True,
               help="Name of the configuration.")
@@ -438,6 +442,7 @@ def delete_config(config, config_name):
         raise click.BadParameter(param=config_name, message="No config specified")
 
 
+# noinspection PyUnusedLocal
 @cli.command()
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
