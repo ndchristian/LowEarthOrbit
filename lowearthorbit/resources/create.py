@@ -105,8 +105,8 @@ def display_status(cfn_client, current_stack, stack_name):
 
         if resource_failures:
             for failures in resource_failures:
-                click.echo("%s has failed to be created because: '%s'" % (
-                    failures['LogicalResourceId'], failures['ResourceStatusReason']))
+                click.echo("{} has failed to be created because: '{}'".format(failures['LogicalResourceId'],
+                                                                              failures['ResourceStatusReason']))
         else:
             click.echo("Please check console for why some resources failed to create.")
 

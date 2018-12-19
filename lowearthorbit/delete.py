@@ -13,7 +13,7 @@ def delete_stacks(**kwargs):
     stack_names = sorted([stack['StackName'] for stack in cfn_client.describe_stacks()['Stacks'] if
                           "{}-".format(job_identifier) in stack['StackName']])
 
-    choice = click.confirm("Do you want to delete these stacks? : %s" % stack_names)
+    choice = click.confirm("Do you want to delete these stacks? : {}".format(stack_names))
     if choice:
         for stack_name in reversed(stack_names):
             cfn_client.delete_stack(StackName=stack_name)

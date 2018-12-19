@@ -41,7 +41,7 @@ def validate_templates(**kwargs):
                 except botocore.exceptions.ClientError as e:
                     validation_errors.append({'Template': s3_object['Key'], 'Error': e})
     except KeyError:
-        log.error("The specified key does not exist in %s" % kwargs['bucket'])
+        log.error("The specified key does not exist in {}".format(kwargs['bucket']))
 
     if validation_errors:
         return validation_errors

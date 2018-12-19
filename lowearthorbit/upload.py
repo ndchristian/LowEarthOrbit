@@ -44,5 +44,5 @@ def upload_templates(**kwargs):
 
             s3_client.get_waiter('object_exists').wait(Bucket=bucket,
                                                        Key=format_path(**upload_parameters))
-            click.echo('Uploaded %s' % file_object)
+            click.echo('Uploaded {}'.format(file_object))
             counter += 1

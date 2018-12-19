@@ -28,7 +28,8 @@ def add_output_values(cfn_client, job_identifier, parameters):
                           "{}-".format(job_identifier) in stack['StackName']])
     for stack_name in stack_names:
         for stack in cfn_client.describe_stacks(StackName=stack_name)['Stacks']:
-            if "{}-".format(job_identifier) in stack['StackName'] and "%02d" % output_counter in stack['StackName']:
+            if "{}-".format(job_identifier) in stack['StackName'] \
+                    and "{:02d}".format(output_counter) in stack['StackName']:
                 output_counter += 1
                 try:
                     if stack['Outputs']:

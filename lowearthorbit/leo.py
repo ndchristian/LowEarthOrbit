@@ -53,8 +53,7 @@ class NotRequiredIf(click.Option):
         if not we_are_present:
             if not other_present:
                 raise click.UsageError(
-                    "You must specify `%s` and/or `%s`" % (
-                        self.name, self.not_required_if))
+                    "You must specify `{}` and/or `{}`".format(self.name, self.not_required_if))
             else:
                 self.prompt = None
 
@@ -109,7 +108,7 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
         log.debug("Boto session arguments : {}".format(session_arguments))
         config.session = boto3.session.Session(**session_arguments)
     except Exception as e:
-        log.exception('Error: %s', e)
+        log.exception('Error: {}'.format(e))
         exit(1)
 
 
@@ -131,7 +130,7 @@ def delete(config, job_identifier, config_name):
             for option in options:
                 delete_arguments.update({option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % config_name)
+            click.echo('No config called "{}" found'.format(config_name))
 
         if job_identifier is None and 'job_identifier' not in delete_arguments:
             raise click.ClickException("No job identifier specified")
@@ -142,7 +141,7 @@ def delete(config, job_identifier, config_name):
         log.debug('Delete arguments: {}'.format(delete_arguments))
         exit(delete_stacks(**delete_arguments))
     except Exception as e:
-        log.exception('Error: %s', e)
+        log.exception('Error: {}'.format(e))
         exit(1)
 
 
@@ -184,7 +183,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
                 except (ValueError, SyntaxError):
                     deploy_arguments.update({option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % config_name)
+            click.echo('No config called "{}" found'.format(config_name))
 
     # Click defaults were overriding config values
     if parameters is None and 'parameters' not in deploy_arguments:
@@ -203,7 +202,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
         log.debug('Deploy arguments: {}'.format(deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
     except Exception as e:
-        log.exception('Error: %s', e)
+        log.exception('Error: {}'.format(e))
         exit(1)
 
 
@@ -234,7 +233,7 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
                 except (ValueError, SyntaxError):
                     plan_arguments.update({option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % config_name)
+            click.echo('No config called "{}" found'.format(config_name))
 
     # Click defaults were overriding config values
     if parameters is None and 'parameters' not in plan_arguments:
@@ -250,8 +249,7 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
         log.debug("Plan arguments: {}".format(plan_arguments))
         exit(plan_deployment(**plan_arguments))
     except Exception as e:
-        log.exception('Error: %s', e)
-        exit(1)
+        log.exception('Error: {}'.format(e))
 
 
 @cli.command()
@@ -275,7 +273,7 @@ def upload(config, bucket, prefix, local_path, config_name):
             for option in options:
                 upload_arguments.update({option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % config_name)
+            click.echo('No config called "{}" found'.format(config_name))
 
     upload_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
@@ -290,7 +288,7 @@ def upload(config, bucket, prefix, local_path, config_name):
         log.debug("Upload arguments: {}".format(upload_arguments))
         exit(upload_templates(**upload_arguments))
     except Exception as e:
-        log.exception('Error: %s', e)
+        log.exception('Error: {}'.format(e))
         exit(1)
 
 
@@ -312,7 +310,7 @@ def validate(config, bucket, prefix, config_name):
         for option in options:
             validate_arguments.update({option: config_parser.get(config_name, option)})
     except configparser.NoSectionError:
-        click.echo('No config called "%s" found' % config_name)
+        click.echo('No config called "{}" found'.format(config_name))
 
     validate_arguments.update(
         parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
@@ -327,9 +325,9 @@ def validate(config, bucket, prefix, config_name):
         if validation_errors:
             click.echo("Following errors occurred when validating templates:")
             for error in validation_errors:
-                click.echo('%s: %s' % (error['Template'], error['Error']))
+                click.echo('{}: {}'.format(error['Template'], error['Error']))
     except Exception as e:
-        log.exception('Error: %s', e)
+        log.exception('Error: {}'.format(e))
         exit(1)
 
 
@@ -370,7 +368,7 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
                    'parameters': parameters, 'notification_arns': notification_arns,
                    'rollback_configuration': rollback_configuration, 'Tags': tags}))
 
-    leo_path = "%s/.leo" % os.path.expanduser("~")
+    leo_path = "{}/.leo".format(os.path.expanduser("~"))
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
         config_parser.add_section(config_name)
@@ -415,7 +413,7 @@ def edit_config(config, config_name, bucket, prefix, gated, local_path, job_iden
                    'parameters': parameters, 'notification_arns': notification_arns,
                    'rollback_configuration': rollback_configuration, 'Tags': tags}))
 
-    leo_path = "%s/.leo" % os.path.expanduser("~")
+    leo_path = "{}/.leo".format(os.path.expanduser("~"))
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
         for key, value in edit_config_values.items():
@@ -431,7 +429,7 @@ def edit_config(config, config_name, bucket, prefix, gated, local_path, job_iden
 def delete_config(config, config_name):
     """Deletes a configuration"""
 
-    config_parser.read("%s/.leo" % os.path.expanduser("~"))
+    config_parser.read("{}/.leo".format(os.path.expanduser("~")))
     if config_name is not None:
         config_parser.remove_section(config_name)
         with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
@@ -447,7 +445,7 @@ def delete_config(config, config_name):
 def list_configs(config, config_name):
     """Lists all configurations or if the config_name is specified, the values of a configuration"""
 
-    config_parser.read("%s/.leo" % os.path.expanduser("~"))
+    config_parser.read("{}/.leo".format(os.path.expanduser("~")))
 
     sections = config_parser.sections()
     if config_name is None:
@@ -459,8 +457,8 @@ def list_configs(config, config_name):
     else:
         try:
             options = config_parser.options(config_name)
-            click.echo("[%s]\n" % config_name)
+            click.echo("[{}]\n".format(config_name))
             for option in options:
                 click.echo("{} = {}".format(option, config_parser.get(config_name, option)))
         except configparser.NoSectionError:
-            click.echo('No config called "%s" found' % config_name)
+            click.echo('No config called "{}" found'.format(config_name))
