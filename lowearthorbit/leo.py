@@ -1,4 +1,5 @@
 import ast
+import json
 import logging
 import os
 
@@ -26,6 +27,16 @@ class Config(object):
     def __init__(self):
         """Creates a decorator so AWS configuration options can be passed"""
         self.session = ''
+
+
+class JsonParamType(click.ParamType):
+    name = 'json'
+
+    def convert(self, value, param, ctx):
+        try:
+            json.loads(value)
+        except ValueError:
+            self.fail('%s is not valid JSON' % value, param, ctx)
 
 
 class LiteralOption(click.Option):
