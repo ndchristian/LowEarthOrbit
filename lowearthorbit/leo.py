@@ -43,11 +43,13 @@ class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
         """Turns JSON input into a data structure Python can work with"""
         if 'file://' in value:
-            with open(os.path.expanduser(value.split('file://')[1]), 'r') as json_structure:
-                value = json_structure.read()
+            file_path = os.path.expanduser(value.split('file://')[1])
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as json_structure:
+                    value = json_structure.read()
         try:
             return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
+        except (SyntaxError, ValueError) as ast_error:
             if value is not None:
                 raise click.BadParameter(value)
 
