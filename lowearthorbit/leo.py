@@ -435,7 +435,7 @@ def delete_config(config, config_name):
         with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
             config_parser.write(config_file)
     else:
-        raise click.BadParameter(param=config_name)
+        raise click.BadParameter(param=config_name, message="No config specified")
 
 
 @cli.command()
