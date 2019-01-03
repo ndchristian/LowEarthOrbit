@@ -198,9 +198,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--notification-arns (JSON)*
 
@@ -216,9 +218,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--rollback-configuration (JSON)*
 
@@ -237,9 +241,11 @@ The rollback triggers that CloudFormation monitors for during deployment, and fo
 }
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--tags (JSON)*
 
@@ -257,9 +263,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--config-name (String)*
 
@@ -269,13 +277,21 @@ Name of the config to be used. This is required unless *--bucket* and/or *--job-
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-#### Example:
+#### Examples:
 
 ##### *To deploy stack(s):*
 
 ```
 leo deploy --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
 ```
+
+##### To deploy stack(s) with using a file for JSON:
+
+```
+leo deploy --bucket foobucket --parameters file://PATH_TO_FILE/file.json --config-name fooconfig
+```
+
+
 
 ----------------------------
 
@@ -328,9 +344,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--config-name (String)*
 
@@ -340,13 +358,21 @@ Name of the config to be used. This is required unless *--bucket* and/or *--job-
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-#### Example:
+#### Examples:
 
 ##### *To plan for a deployment*
 
 ```
 leo plan --config-name fooconfig
 ```
+
+##### To plan for a deployment using a file for JSON:
+
+```
+leo plan --config-name fooconfig --parameters file://PATH_TO_FILE/file.json
+```
+
+
 
 ----------------------------
 
@@ -389,8 +415,6 @@ Name of the config to be used. This is required unless *--bucket* and/or *--loca
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
 #### Example:
-
-#### Examples:
 
 ##### *To upload CloudFormation templates:*
 
@@ -507,9 +531,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--notification-arns (JSON)*
 
@@ -525,9 +551,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--rollback-configuration (JSON)*
 
@@ -546,9 +574,11 @@ The rollback triggers that CloudFormation monitors for during deployment, and fo
 }
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--tags (JSON)*
 
@@ -566,9 +596,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--config-name (String)*
 
@@ -578,13 +610,21 @@ Name of the config.
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-#### Example:
+#### Examples:
 
 ##### *To create a config:*
 
 ```
 leo create-config --bucket foobucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
 ```
+
+##### To create a config using a file for JSON:
+
+```
+leo create-config --bucket foobucket --parameters file://PATH_TO_FILE/file.json --config-name fooconfig
+```
+
+
 
 ### edit-config
 
@@ -652,9 +692,13 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file.
+
+``
 
 *--notification-arns (JSON)*
 
@@ -670,9 +714,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--rollback-configuration (JSON)*
 
@@ -691,9 +737,11 @@ The rollback triggers that CloudFormation monitors for during deployment, and fo
 }
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--tags (JSON)*
 
@@ -711,9 +759,11 @@ JSON Syntax:
 ]
 ```
 
-***Note:***
+***Notes:***
 
 *JSON syntax must be wrapped in opposing quotations that are in the JSON syntax. For example, the example above would be wrapped in single quotations.* 
+
+You may also point to a JSON file. 
 
 *--config-name (String)*
 
@@ -723,13 +773,21 @@ Name of the config.
 
 *If values from other options are specified, then they will override the respective value in the configuration.*
 
-#### Example:
+#### Examples:
 
 ##### *To edit a config:*
 
 ```
 leo edit-config --bucket barbucket --parameters "[{'ParameterKey':'AccountNo','ParameterValue':'*********'},{'ParameterKey':'S3BucketCode','ParameterValue':'BUCKET'},{'ParameterKey':'S3KeyCode','ParameterValue':'KEY'},{'ParameterKey':'Endpoint','ParameterValue':'USER@EXAMPLE.COM'},{'ParameterKey':'Protocol','ParameterValue':'email'},{'ParameterKey':'TagEnvironment','ParameterValue':'NONPROD'},{'ParameterKey':'TagPoC','ParameterValue':'USER@EXAMPLE.COM'}]" --config-name fooconfig
 ```
+
+##### To edit a config using a file for JSON:
+
+```
+leo edit-config --bucket foobucket --parameters file://PATH_TO_FILE/file.json --config-name fooconfig
+```
+
+
 
 ------
 

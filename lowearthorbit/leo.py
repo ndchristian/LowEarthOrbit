@@ -1,4 +1,5 @@
 import ast
+import json
 import logging
 import os
 
@@ -29,12 +30,27 @@ class Config(object):
         self.session = ''
 
 
+class JsonParamType(click.ParamType):
+    name = 'json'
+
+    def convert(self, value, param, ctx):
+        try:
+            json.loads(value)
+        except ValueError:
+            self.fail('%s is not valid JSON' % value, param, ctx)
+
+
 class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
         """Turns JSON input into a data structure Python can work with"""
+        if 'file://' in value:
+            file_path = os.path.expanduser(value.split('file://')[1])
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as json_structure:
+                    value = json_structure.read()
         try:
             return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
+        except (SyntaxError, ValueError) as ast_error:
             if value is not None:
                 raise click.BadParameter(value)
 
@@ -121,8 +137,9 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 @pass_config
 def delete(config, job_identifier, config_name):
     """Deletes all stacks with the given job identifier"""
-    delete_arguments = {}
 
+    delete_arguments = {}
+    delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
@@ -160,10 +177,10 @@ def delete(config, job_identifier, config_name):
 @click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
+@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption,
+@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
               help='Tags added to all deployed stacks')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
@@ -172,7 +189,11 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
            config_name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
-
+    deploy_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
+                                        'job_identifier': job_identifier, 'parameters': parameters,
+                                        'notification_arns': notification_arns,
+                                        'rollback_configuration': rollback_configuration,
+                                        'Tags': tags}))
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
@@ -214,7 +235,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
+@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
               help='All parameters that are needed to create an accurate plan.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
@@ -223,6 +244,9 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
     plan_arguments = {}
 
+    plan_arguments.update(
+        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
+                    'parameters': parameters}))
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
@@ -245,7 +269,6 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     plan_arguments.update(parse_args(
         arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
                    'parameters': parameters}))
-
     try:
         log.debug("Plan arguments: {}".format(plan_arguments))
         exit(plan_deployment(**plan_arguments))
@@ -266,6 +289,8 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
 def upload(config, bucket, prefix, local_path, config_name):
     """Uploads all templates to S3"""
     upload_arguments = {}
+    upload_arguments.update(
+        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
 
     if config_name is not None:
         config_parser.read("{}/.leo".format(os.path.expanduser("~")))
@@ -304,6 +329,7 @@ def upload(config, bucket, prefix, local_path, config_name):
 def validate(config, bucket, prefix, config_name):
     """Validates all templates"""
     validate_arguments = {}
+    validate_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix}))
 
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
     try:
@@ -348,15 +374,15 @@ def validate(config, bucket, prefix, config_name):
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
+@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption,
+@click.option('--notification-arns', cls=LiteralOption, type=JsonParamType(),
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
+@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption,
+@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
               help='Tags added to all deployed stacks.')
 @pass_config
 def create_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
@@ -394,15 +420,15 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
+@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption,
+@click.option('--notification-arns', cls=LiteralOption, type=JsonParamType(),
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
+@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption,
+@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
               help='Tags added to all deployed stacks')
 @pass_config
 def edit_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
