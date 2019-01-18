@@ -21,30 +21,6 @@ def add_absent_parameters(parameters, template_parameters):
     return parameters
 
 
-def add_output_values(cfn_client, job_identifier, parameters):
-    """Adds output values from previous stacks with the same job identifier to the parameter values"""
-    output_counter = 0
-    stack_names = sorted([stack['StackName'] for stack in cfn_client.describe_stacks()['Stacks'] if
-                          "{}-".format(job_identifier) in stack['StackName']])
-    for stack_name in stack_names:
-        for stack in cfn_client.describe_stacks(StackName=stack_name)['Stacks']:
-            if "{}-".format(job_identifier) in stack['StackName'] \
-                    and "{:02d}".format(output_counter) in stack['StackName']:
-                output_counter += 1
-                try:
-                    if stack['Outputs']:
-                        for index_counter, parameter in enumerate(parameters):
-                            for output in stack['Outputs']:
-                                if parameter['ParameterKey'] == output['OutputKey']:
-                                    parameters[index_counter] = {'ParameterKey': parameter['ParameterKey'],
-                                                                 'ParameterValue': output['OutputValue']}
-
-                except KeyError:
-                    pass
-
-    return parameters
-
-
 def add_input_parameter_values(parameters):
     """If there is a parameter that does not have a value, it requests the user to add it"""
     for counter, parameter in enumerate(parameters):
@@ -62,7 +38,7 @@ def add_input_parameter_values(parameters):
     return parameters
 
 
-def gather(session, key_object, parameters, bucket, job_identifier):
+def gather(session, key_object, parameters, bucket):
     """Gathers parameters from input and assigns values for the stack"""
 
     cfn_client = session.client('cloudformation')
@@ -81,10 +57,6 @@ def gather(session, key_object, parameters, bucket, job_identifier):
     full_parameters = add_absent_parameters(parameters=slimmed_parameters,
                                             template_parameters=template_summary['Parameters'])
 
-    outputs_parameters = add_output_values(cfn_client=cfn_client,
-                                           job_identifier=job_identifier,
-                                           parameters=full_parameters)
-
-    completed_parameters = add_input_parameter_values(parameters=outputs_parameters)
+    completed_parameters = add_input_parameter_values(parameters=full_parameters)
 
     return completed_parameters
