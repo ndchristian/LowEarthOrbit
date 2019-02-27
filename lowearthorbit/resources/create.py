@@ -41,7 +41,7 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
         StackName=stack_name,
         TemplateURL=template_url,
         Parameters=stack_parameters,
-        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
+        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
         Description="Transformation details change set for {} created by Leo".format(
             stack_name),
         ChangeSetType='CREATE',
