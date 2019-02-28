@@ -25,12 +25,14 @@ log = logging.getLogger(__name__)
 
 
 class Config(object):
+
     def __init__(self):
         """Creates a decorator so AWS configuration options can be passed"""
         self.session = ''
 
 
 class JsonParamType(click.ParamType):
+
     name = 'json'
 
     def convert(self, value, param, ctx):
@@ -41,6 +43,7 @@ class JsonParamType(click.ParamType):
 
 
 class LiteralOption(click.Option):
+
     def type_cast_value(self, ctx, value):
         """Turns JSON input into a data structure Python can work with"""
         if 'file://' in value:
@@ -189,11 +192,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
            config_name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
-    deploy_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
-                                        'job_identifier': job_identifier, 'parameters': parameters,
-                                        'notification_arns': notification_arns,
-                                        'rollback_configuration': rollback_configuration,
-                                        'Tags': tags}))
+
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
@@ -244,9 +243,6 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
     plan_arguments = {}
 
-    plan_arguments.update(
-        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
-                    'parameters': parameters}))
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
@@ -289,8 +285,6 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
 def upload(config, bucket, prefix, local_path, config_name):
     """Uploads all templates to S3"""
     upload_arguments = {}
-    upload_arguments.update(
-        parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
 
     if config_name is not None:
         config_parser.read("{}/.leo".format(os.path.expanduser("~")))
@@ -329,7 +323,6 @@ def upload(config, bucket, prefix, local_path, config_name):
 def validate(config, bucket, prefix, config_name):
     """Validates all templates"""
     validate_arguments = {}
-    validate_arguments.update(parse_args({'session': config.session, 'bucket': bucket, 'prefix': prefix}))
 
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
     try:
