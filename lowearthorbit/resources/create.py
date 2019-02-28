@@ -36,7 +36,7 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
     """Handles templates that transform, such as templates that are using SAM."""
 
     # Gathering capabilities is a bit wacky with templates that transform
-    click.echo("Gathering information needed to transform the template")
+    click.echo("Gathering information needed  to transform the template")
     transform_stack_details = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
@@ -57,19 +57,27 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
     )
 
     new_template_capabilities = cfn_client.get_template_summary(
-        TemplateBody=str(json.loads(json.dumps(new_template['TemplateBody'])))  # Check what on earth is going on here
+        TemplateBody=json.dumps(new_template['TemplateBody'], indent=4, default=str)
     )
+
     cfn_client.delete_change_set(
         ChangeSetName=transform_stack_details['Id']
     )
+
+    click.echo("Transforming template")
+
+    if 'Capabilities' in new_template_capabilities:
+        iam_capabilities = new_template_capabilities['Capabilities']
+    else:
+        iam_capabilities = []
 
     click.echo("Transforming template")
     transform_stack = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
         Parameters=stack_parameters,
-        Capabilities=new_template_capabilities['Capabilities'],
-        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
+        Capabilities=iam_capabilities,
+        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
         Description="Transformation change set for {} created by Leo".format(
             stack_name),
         ChangeSetType='CREATE',
