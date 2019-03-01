@@ -324,13 +324,14 @@ def validate(config, bucket, prefix, config_name):
     """Validates all templates"""
     validate_arguments = {}
 
-    config_parser.read("{}/.leo".format(os.path.expanduser("~")))
-    try:
-        options = config_parser.options(config_name)
-        for option in options:
-            validate_arguments.update({option: config_parser.get(config_name, option)})
-    except configparser.NoSectionError:
-        click.echo('No config called "{}" found'.format(config_name))
+    if config_name is not None:
+        config_parser.read("{}/.leo".format(os.path.expanduser("~")))
+        try:
+            options = config_parser.options(config_name)
+            for option in options:
+                validate_arguments.update({option: config_parser.get(config_name, option)})
+        except configparser.NoSectionError:
+            click.echo('No config called "{}" found'.format(config_name))
 
     validate_arguments.update(
         parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
