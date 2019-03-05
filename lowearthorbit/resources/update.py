@@ -3,7 +3,6 @@ import time
 import botocore
 import click
 
-from lowearthorbit.resources.capabilities import get as get_capabilities
 from lowearthorbit.resources.changes import display_changes, apply_changes, change_set_delete_waiter
 from lowearthorbit.resources.parameters import gather as gather_parameters
 
@@ -30,7 +29,6 @@ def update_stack(**kwargs):
     click.echo("\n{}:".format(stack_name))
     click.echo("Creating change set...")
     change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
-    stack_capabilities = get_capabilities(template_url=template_url, session=session)
     stack_parameters = gather_parameters(session=session,
                                          key_object=key_object, parameters=parameters, bucket=bucket,
                                          job_identifier=job_identifier)
@@ -39,7 +37,7 @@ def update_stack(**kwargs):
             StackName=stack_name,
             TemplateURL=template_url,
             Parameters=stack_parameters,
-            Capabilities=stack_capabilities,
+            Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
             ChangeSetName=change_set_name,
             Description="Change set for {} created by Leo".format(stack_name),
             **deploy_parameters
@@ -49,16 +47,19 @@ def update_stack(**kwargs):
 
     try:
         cfn_client.get_waiter('change_set_create_complete').wait(ChangeSetName=change_set['Id'])
-    except botocore.exceptions.WaiterError as change_set_creation_error:
-        long_string_err = "The submitted information didn't contain changes. " \
-                          "Submit different information to create a change set."
+    except botocore.exceptions.WaiterError:
+        change_set_failed_reason = cfn_client.describe_change_set(
+            ChangeSetName=change_set['Id']
+        )['StatusReason']
 
-        if str(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason']) in \
-                (long_string_err, "No updates are to be performed."):
+        no_changes_error = "The submitted information didn't contain changes. " \
+                           "Submit different information to create a change set."
+
+        if change_set_failed_reason in (no_changes_error, "No updates are to be performed."):
             click.echo(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason'])
             pass
         else:
-            raise change_set_creation_error
+            raise change_set_failed_reason
 
     # Checks for the changes
     change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set['Id'])

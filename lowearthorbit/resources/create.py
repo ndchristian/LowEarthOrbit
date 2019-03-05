@@ -1,7 +1,6 @@
 import json
 import sys
 import time
-
 import botocore
 import click
 
@@ -36,24 +35,33 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
     """Handles templates that transform, such as templates that are using SAM."""
 
     # Gathering capabilities is a bit wacky with templates that transform
-    click.echo("Gathering information needed  to transform the template")
-    transform_stack_details = cfn_client.create_change_set(
-        StackName=stack_name,
-        TemplateURL=template_url,
-        Parameters=stack_parameters,
-        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
-        Description="Transformation details change set for {} created by Leo".format(
-            stack_name),
-        ChangeSetType='CREATE',
-        **deploy_parameters
-    )
+    click.echo("Gathering information needed to transform the template")
+    try:
+        change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
+        transform_stack_details = cfn_client.create_change_set(
+            StackName=stack_name,
+            TemplateURL=template_url,
+            Parameters=stack_parameters,
+            Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
+            ChangeSetName=change_set_name,
+            Description="Transformation details change set for {} created by Leo".format(
+                stack_name),
+            ChangeSetType='CREATE',
+            **deploy_parameters
+        )
 
-    cfn_client.get_waiter('change_set_create_complete').wait(
-        ChangeSetName=transform_stack_details['Id']
-    )
+        cfn_client.get_waiter('change_set_create_complete').wait(
+            ChangeSetName=transform_stack_details['Id']
+        )
+    except botocore.exceptions.WaiterError:
+        change_set_failed_reason = cfn_client.describe_change_set(
+            ChangeSetName=transform_stack_details['Id'])['StatusReason']
+
+        raise change_set_failed_reason
 
     new_template = cfn_client.get_template(
-        ChangeSetName=transform_stack_details['Id']
+        ChangeSetName=transform_stack_details['Id'],
+        TemplateStage="Processed"
     )
 
     new_template_capabilities = cfn_client.get_template_summary(
@@ -71,7 +79,6 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
     else:
         iam_capabilities = []
 
-    click.echo("Transforming template")
     transform_stack = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
@@ -113,8 +120,8 @@ def display_status(cfn_client, current_stack, stack_name):
 
         if resource_failures:
             for failures in resource_failures:
-                click.echo("{} has failed to be created because: '{}'".format(failures['LogicalResourceId'],
-                                                                              failures['ResourceStatusReason']))
+                click.echo("%s has failed to be created because: '%s'" % (
+                    failures['LogicalResourceId'], failures['ResourceStatusReason']))
         else:
             click.echo("Please check console for why some resources failed to create.")
 
@@ -152,6 +159,7 @@ def create_stack(**kwargs):
 
     try:
         # Templates with declared transformations need to be transformed before being fed to CloudFormation
+        transformed = False
         if 'DeclaredTransforms' in template_summary:
             transformed_stack = transform_template(cfn_client=cfn_client,
                                                    stack_name=stack_name,
@@ -163,9 +171,9 @@ def create_stack(**kwargs):
             change_set_details = cfn_client.describe_change_set(ChangeSetName=transformed_stack['Id'])
             change_set_changes = change_set_details['Changes']
             display_changes(changes=change_set_changes, change_set=True)
+            transformed = True
 
         else:
-            transformed_stack = {}
             try:
                 cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
                                                              Parameters=stack_parameters)['Url']
@@ -178,7 +186,7 @@ def create_stack(**kwargs):
         if gated:
             execute_changes = click.confirm("\nWould you like to deploy?")
             if execute_changes:
-                if transformed_stack:
+                if transformed:
                     cfn_client.execute_change_set(ChangeSetName=transformed_stack['Id'],
                                                   StackName=stack_name)
                     current_stack = cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
@@ -196,7 +204,7 @@ def create_stack(**kwargs):
                 return {'StackName': stack_name}
 
             else:
-                if transformed_stack:
+                if transformed:
                     click.echo("Deleting change set {}...".format(transformed_stack['Id']))
                     cfn_client.delete_change_set(ChangeSetName=transformed_stack['Id'],
                                                  StackName=stack_name)
@@ -204,7 +212,7 @@ def create_stack(**kwargs):
                     change_set_delete_waiter(change_set_id=transformed_stack['Id'], cfn_client=cfn_client)
 
         else:
-            if transformed_stack:
+            if transformed:
                 cfn_client.execute_change_set(ChangeSetName=transformed_stack['Id'],
                                               StackName=stack_name)
                 current_stack = cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
