@@ -30,8 +30,7 @@ def update_stack(**kwargs):
     click.echo("Creating change set...")
     change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
     stack_parameters = gather_parameters(session=session,
-                                         key_object=key_object, parameters=parameters, bucket=bucket,
-                                         job_identifier=job_identifier)
+                                         key_object=key_object, parameters=parameters, bucket=bucket)
     try:
         change_set = cfn_client.create_change_set(
             StackName=stack_name,

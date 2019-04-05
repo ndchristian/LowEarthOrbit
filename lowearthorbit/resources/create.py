@@ -154,8 +154,7 @@ def create_stack(**kwargs):
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
     stack_parameters = gather_parameters(session=session,
-                                         key_object=key_object, parameters=parameters, bucket=bucket,
-                                         job_identifier=job_identifier)
+                                         key_object=key_object, parameters=parameters, bucket=bucket)
 
     try:
         # Templates with declared transformations need to be transformed before being fed to CloudFormation
