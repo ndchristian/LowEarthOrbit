@@ -1,0 +1,3 @@
+[submodule "vendor/aws-parsecf"]
+	path = vendor/aws-parsecf
+	url = git://github.com/ndchristian/aws-parsecf.git
