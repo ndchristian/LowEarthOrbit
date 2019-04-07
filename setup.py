@@ -13,7 +13,8 @@ setup(
     long_description=open('README.txt').read(),
     install_requires=['click',
                       'botocore',
-                      'boto3'
+                      'boto3',
+                      'cfn_flip'
                       ],
     entry_points={
         'console_scripts': [
