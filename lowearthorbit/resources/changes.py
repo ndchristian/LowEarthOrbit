@@ -77,8 +77,8 @@ def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name,
         if resource_failures:
             for failures in resource_failures:
                 if failures not in past_failures:
-                    click.echo("%s has failed to be updated because: '%s'" % (
-                        failures['LogicalResourceId'], failures['ResourceStatusReason']))
+                    click.echo("{} has failed to be updated because: '{}'".format(failures['LogicalResourceId'],
+                                                                                  failures['ResourceStatusReason']))
         else:
             click.echo("Please check console for why some resources failed to update.")
 
@@ -89,7 +89,7 @@ def apply_changes(cfn_client, update_stack_name, past_failures, change_set_name,
             stack_continue_rollback_waiter(stack_name=update_stack_name, cfn_client=cfn_client)
 
         # Don't use sys.exit?
-        sys.exit("Stopped update because of %s's updating failure." % update_stack_name)
+        sys.exit("Stopped update because of {}'s updating failure.".format(update_stack_name))
 
 
 def change_log(changes, change_set):
@@ -104,13 +104,13 @@ def change_log(changes, change_set):
                 replacement = "None"
 
             try:
-                phyresid = change['ResourceChange']['PhysicalResourceId']
+                physical_resource_id = change['ResourceChange']['PhysicalResourceId']
             except KeyError:
-                phyresid = "None"
+                physical_resource_id = "None"
 
             data.append(["Action: {}".format(change['ResourceChange']['Action']),
                          "Logical ID: {}".format(change['ResourceChange']['LogicalResourceId']),
-                         "Physical ID: {}".format(phyresid),
+                         "Physical ID: {}".format(physical_resource_id),
                          "Resource Type: {}".format(change['ResourceChange']['ResourceType']),
                          "Replacement: {}".format(replacement)])
     else:

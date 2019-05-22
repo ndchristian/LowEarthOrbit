@@ -78,7 +78,7 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
                                                      Parameters=stack_parameters)['Url']
     except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
         cost_url = None
-    click.echo("Estimated template costs: {}".format(cost_url))
+    click.echo("Cost estimate for these resources : {}".format(cost_url))
     if change_set_changes:
         display_changes(changes=change_set_changes, change_set=True)
     else:
@@ -105,7 +105,8 @@ def plan_deployment(**kwargs):
 
     stack_counter = 0
     for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
-        if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith('%02d' % stack_counter):
+        if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith(
+                '{:02d}'.format(stack_counter)):
             # Only lets through S3 objects with the names properly formatted for LEO
             stack_name = "{}-{}".format(job_identifier,
                                         str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])

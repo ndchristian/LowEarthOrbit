@@ -1,7 +1,6 @@
 import json
 import sys
 import time
-
 import botocore
 import click
 
@@ -37,39 +36,55 @@ def transform_template(cfn_client, stack_name, template_url, stack_parameters, d
 
     # Gathering capabilities is a bit wacky with templates that transform
     click.echo("Gathering information needed to transform the template")
-    transform_stack_details = cfn_client.create_change_set(
-        StackName=stack_name,
-        TemplateURL=template_url,
-        Parameters=stack_parameters,
-        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
-        Description="Transformation details change set for {} created by Leo".format(
-            stack_name),
-        ChangeSetType='CREATE',
-        **deploy_parameters
-    )
+    try:
+        change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
+        transform_stack_details = cfn_client.create_change_set(
+            StackName=stack_name,
+            TemplateURL=template_url,
+            Parameters=stack_parameters,
+            Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
+            ChangeSetName=change_set_name,
+            Description="Transformation details change set for {} created by Leo".format(
+                stack_name),
+            ChangeSetType='CREATE',
+            **deploy_parameters
+        )
 
-    cfn_client.get_waiter('change_set_create_complete').wait(
-        ChangeSetName=transform_stack_details['Id']
-    )
+        cfn_client.get_waiter('change_set_create_complete').wait(
+            ChangeSetName=transform_stack_details['Id']
+        )
+    except botocore.exceptions.WaiterError:
+        change_set_failed_reason = cfn_client.describe_change_set(
+            ChangeSetName=transform_stack_details['Id'])['StatusReason']
+
+        raise change_set_failed_reason
 
     new_template = cfn_client.get_template(
-        ChangeSetName=transform_stack_details['Id']
+        ChangeSetName=transform_stack_details['Id'],
+        TemplateStage="Processed"
     )
 
     new_template_capabilities = cfn_client.get_template_summary(
-        TemplateBody=str(json.loads(json.dumps(new_template['TemplateBody'])))  # Check what on earth is going on here
+        TemplateBody=json.dumps(new_template['TemplateBody'], indent=4, default=str)
     )
+
     cfn_client.delete_change_set(
         ChangeSetName=transform_stack_details['Id']
     )
 
     click.echo("Transforming template")
+
+    if 'Capabilities' in new_template_capabilities:
+        iam_capabilities = new_template_capabilities['Capabilities']
+    else:
+        iam_capabilities = []
+
     transform_stack = cfn_client.create_change_set(
         StackName=stack_name,
         TemplateURL=template_url,
         Parameters=stack_parameters,
-        Capabilities=new_template_capabilities['Capabilities'],
-        ChangeSetName='change set-{}-{}'.format(stack_name, int(time.time())),
+        Capabilities=iam_capabilities,
+        ChangeSetName='changeset-{}-{}'.format(stack_name, int(time.time())),
         Description="Transformation change set for {} created by Leo".format(
             stack_name),
         ChangeSetType='CREATE',
@@ -139,8 +154,7 @@ def create_stack(**kwargs):
     stack_capabilities = get_capabilities(template_url=template_url, session=session)
 
     stack_parameters = gather_parameters(session=session,
-                                         key_object=key_object, parameters=parameters, bucket=bucket,
-                                         job_identifier=job_identifier)
+                                         key_object=key_object, parameters=parameters, bucket=bucket)
 
     try:
         # Templates with declared transformations need to be transformed before being fed to CloudFormation
