@@ -1,5 +1,4 @@
 import ast
-import json
 import logging
 import os
 
@@ -41,7 +40,6 @@ class JsonParamType(click.ParamType):
         except ValueError:
             self.fail('%s is not valid JSON' % value, param, ctx)
 
-
 class LiteralOption(click.Option):
 
     def type_cast_value(self, ctx, value):
@@ -51,7 +49,8 @@ class LiteralOption(click.Option):
                 file_path = os.path.expanduser(value.split('file://')[1])
                 if os.path.exists(file_path):
                     with open(file_path, 'r') as json_structure:
-                        value = json_structure.read()
+                        value = json_str
+                        ucture.read()
         try:
             return ast.literal_eval(value)
         except (SyntaxError, ValueError):
@@ -181,10 +180,10 @@ def delete(config, job_identifier, config_name):
 @click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
+@click.option('--rollback-configuration', cls=LiteralOption,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
+@click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
@@ -235,7 +234,7 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
               help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
+@click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to create an accurate plan.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
@@ -369,15 +368,15 @@ def validate(config, bucket, prefix, config_name):
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
+@click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption, type=JsonParamType(),
+@click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
+@click.option('--rollback-configuration', cls=LiteralOption,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
+@click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks.')
 @pass_config
 def create_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
@@ -415,15 +414,15 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption, type=JsonParamType(),
+@click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption, type=JsonParamType(),
+@click.option('--notification-arns', cls=LiteralOption,
               help='All parameters that are needed to deploy with. '
                    'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption, type=JsonParamType(),
+@click.option('--rollback-configuration', cls=LiteralOption,
               help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
                    'and updating operations, and for the specified monitoring period afterwards.')
-@click.option('--tags', cls=LiteralOption, type=JsonParamType(),
+@click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
 def edit_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
