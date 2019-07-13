@@ -37,12 +37,18 @@ def upload_templates(**kwargs):
 
     counter = 0
     for file_object in os.listdir(local_path):
-        if file_object.lower().endswith(cfn_ext) and file_object.startswith('%02d' % counter):
+        if file_object.lower().endswith(
+                cfn_ext) and file_object.startswith('%02d' % counter):
             upload_parameters.update({'file_object': file_object})
-            s3_client.upload_file(format_path(local_path=local_path, file_object=file_object),
-                                  bucket, format_path(**upload_parameters))
+            s3_client.upload_file(
+                format_path(
+                    local_path=local_path,
+                    file_object=file_object),
+                bucket,
+                format_path(
+                    **upload_parameters))
 
-            s3_client.get_waiter('object_exists').wait(Bucket=bucket,
-                                                       Key=format_path(**upload_parameters))
+            s3_client.get_waiter('object_exists').wait(
+                Bucket=bucket, Key=format_path(**upload_parameters))
             click.echo('Uploaded {}'.format(file_object))
             counter += 1

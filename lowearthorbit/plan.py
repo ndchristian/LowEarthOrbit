@@ -9,26 +9,44 @@ from lowearthorbit.resources.changes import display_changes
 from lowearthorbit.resources.parameters import gather
 
 
-def create_plan(session, bucket, s3_object_key, job_identifier, parameters, template_url):
+def create_plan(
+        session,
+        bucket,
+        s3_object_key,
+        job_identifier,
+        parameters,
+        template_url):
     """Shows a plan of what CloudFormation might create and how much it might cost"""
 
     cfn_client = session.client('cloudformation')
 
-    template_summary = cfn_client.get_template_summary(TemplateURL=template_url)
-    stack_parameters = gather(session=session,
-                              key_object=s3_object_key, parameters=parameters, bucket=bucket,
-                              job_identifier=job_identifier)
+    template_summary = cfn_client.get_template_summary(
+        TemplateURL=template_url)
+    stack_parameters = gather(
+        session=session,
+        key_object=s3_object_key,
+        parameters=parameters,
+        bucket=bucket,
+        job_identifier=job_identifier)
     try:
-        cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
-                                                     Parameters=stack_parameters)['Url']
+        cost_url = cfn_client.estimate_template_cost(
+            TemplateURL=template_url, Parameters=stack_parameters)['Url']
     except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
         cost_url = None
 
     click.echo("Estimated template cost URL: {}".format(cost_url))
-    display_changes(changes=template_summary['ResourceTypes'], change_set=False)
+    display_changes(
+        changes=template_summary['ResourceTypes'], change_set=False)
 
 
-def update_plan(session, stack_name, s3_object_key, template_url, job_identifier, parameters, bucket):
+def update_plan(
+        session,
+        stack_name,
+        s3_object_key,
+        template_url,
+        job_identifier,
+        parameters,
+        bucket):
     """Shows a plan of what CloudFormation might update and how much it might cost"""
 
     cfn_client = session.client('cloudformation')
@@ -36,7 +54,8 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
     click.echo("\nCreating change set for {}...".format(stack_name))
 
     change_set_name = 'changeset-{}-{}'.format(stack_name, int(time.time()))
-    stack_capabilities = get_capabilities(template_url=template_url, session=session)
+    stack_capabilities = get_capabilities(
+        template_url=template_url, session=session)
 
     stack_parameters = gather(session=session,
                               key_object=s3_object_key,
@@ -57,25 +76,31 @@ def update_plan(session, stack_name, s3_object_key, template_url, job_identifier
         raise ChangeSetCreationError
 
     try:
-        cfn_client.get_waiter('change_set_create_complete').wait(ChangeSetName=change_set['Id'])
+        cfn_client.get_waiter('change_set_create_complete').wait(
+            ChangeSetName=change_set['Id'])
     except botocore.exceptions.WaiterError as change_set_creation_error:
         long_string_err = "The submitted information didn't contain changes. " \
                           "Submit different information to create a change set."
 
-        if str(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason']) in \
-                (long_string_err, "No updates are to be performed."):
-            click.echo(cfn_client.describe_change_set(ChangeSetName=change_set['Id'])['StatusReason'])
+        if str(
+                cfn_client.describe_change_set(
+                    ChangeSetName=change_set['Id'])['StatusReason']) in (
+                long_string_err,
+                "No updates are to be performed."):
+            click.echo(cfn_client.describe_change_set(
+                ChangeSetName=change_set['Id'])['StatusReason'])
             pass
         else:
             raise change_set_creation_error
 
     # Checks for the changes
-    change_set_details = cfn_client.describe_change_set(ChangeSetName=change_set['Id'])
+    change_set_details = cfn_client.describe_change_set(
+        ChangeSetName=change_set['Id'])
     change_set_changes = change_set_details['Changes']
 
     try:
-        cost_url = cfn_client.estimate_template_cost(TemplateURL=template_url,
-                                                     Parameters=stack_parameters)['Url']
+        cost_url = cfn_client.estimate_template_cost(
+            TemplateURL=template_url, Parameters=stack_parameters)['Url']
     except (botocore.exceptions.ClientError, botocore.exceptions.ParamValidationError):
         cost_url = None
     click.echo("Cost estimate for these resources : {}".format(cost_url))
@@ -104,12 +129,15 @@ def plan_deployment(**kwargs):
     cfn_client = session.client('cloudformation')
 
     stack_counter = 0
-    for s3_object in s3_client.list_objects_v2(**objects_parameters)['Contents']:
-        if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split('/')[-1].startswith(
-                '{:02d}'.format(stack_counter)):
-            # Only lets through S3 objects with the names properly formatted for LEO
+    for s3_object in s3_client.list_objects_v2(
+            **objects_parameters)['Contents']:
+        if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split(
+                '/')[-1].startswith('{:02d}'.format(stack_counter)):
+            # Only lets through S3 objects with the names properly formatted
+            # for LEO
             stack_name = "{}-{}".format(job_identifier,
-                                        str(s3_object['Key'].split('/')[-1]).rsplit('.', 1)[0])
+                                        str(s3_object['Key'].split('/')[-1]).rsplit('.',
+                                                                                    1)[0])
 
             template_url = s3_client.generate_presigned_url('get_object',
                                                             Params={'Bucket': bucket,

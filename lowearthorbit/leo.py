@@ -1,4 +1,5 @@
 import ast
+import json
 import logging
 import os
 
@@ -31,7 +32,6 @@ class Config(object):
 
 
 class JsonParamType(click.ParamType):
-
     name = 'json'
 
     def convert(self, value, param, ctx):
@@ -39,6 +39,7 @@ class JsonParamType(click.ParamType):
             json.loads(value)
         except ValueError:
             self.fail('%s is not valid JSON' % value, param, ctx)
+
 
 class LiteralOption(click.Option):
 
@@ -49,8 +50,7 @@ class LiteralOption(click.Option):
                 file_path = os.path.expanduser(value.split('file://')[1])
                 if os.path.exists(file_path):
                     with open(file_path, 'r') as json_structure:
-                        value = json_str
-                        ucture.read()
+                        value = json_structure.read()
         try:
             return ast.literal_eval(value)
         except (SyntaxError, ValueError):
@@ -73,7 +73,10 @@ class NotRequiredIf(click.Option):
         if not we_are_present:
             if not other_present:
                 raise click.UsageError(
-                    "You must specify `{}` and/or `{}`".format(self.name, self.not_required_if))
+                    "You must specify `{}` and/or `{}`".format(
+                        self.name,
+                        self.not_required_if)
+                )
             else:
                 self.prompt = None
 
@@ -103,16 +106,28 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
               help='AWS secret access key')
 @click.option('--aws_session_token', type=click.STRING,
               help='AWS temporary session token')
-@click.option('--botocore-session', type=click.STRING,
-              help='Use this Botocore session instead of creating a new default one')
-@click.option('--profile', type=click.STRING,
-              help='The name of a profile to use. If not given, then the default profile is used')
+@click.option(
+    '--botocore-session',
+    type=click.STRING,
+    help='Use this Botocore session instead of creating a new default one')
+@click.option(
+    '--profile',
+    type=click.STRING,
+    help='The name of a profile to use. If not given, then the default profile is used')
 @click.option('--region', type=click.STRING,
               help='Region when creating new connections')
 @click.option('--debug', is_flag=True,
               help='Shows debug output')
 @pass_config
-def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, botocore_session, profile, region, debug):
+def cli(
+        config,
+        aws_access_key_id,
+        aws_secret_access_key,
+        aws_session_token,
+        botocore_session,
+        profile,
+        region,
+        debug):
     """Creates the connection to AWS with the specified session arguments"""
     try:
         if debug:
@@ -120,10 +135,15 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
             log.setLevel(logging.DEBUG)
 
         session_arguments = {}
-        session_arguments.update(parse_args(
-            {'aws_access_key_id': aws_access_key_id, 'aws_secret_access_key': aws_secret_access_key,
-             'aws_session_token': aws_session_token, 'botocore_session': botocore_session, 'profile_name': profile,
-             'region_name': region}))
+        session_arguments.update(
+            parse_args(
+                {
+                    'aws_access_key_id': aws_access_key_id,
+                    'aws_secret_access_key': aws_secret_access_key,
+                    'aws_session_token': aws_session_token,
+                    'botocore_session': botocore_session,
+                    'profile_name': profile,
+                    'region_name': region}))
 
         log.debug("Boto session arguments : {}".format(session_arguments))
         config.session = boto3.session.Session(**session_arguments)
@@ -133,8 +153,12 @@ def cli(config, aws_access_key_id, aws_secret_access_key, aws_session_token, bot
 
 
 @cli.command()
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
-              help='Prefix that is used to identify stacks to delete')
+@click.option(
+    '--job-identifier',
+    type=click.STRING,
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help='Prefix that is used to identify stacks to delete')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
@@ -142,21 +166,24 @@ def delete(config, job_identifier, config_name):
     """Deletes all stacks with the given job identifier"""
 
     delete_arguments = {}
-    delete_arguments.update({'session': config.session, 'job_identifier': job_identifier})
+    delete_arguments.update(
+        {'session': config.session, 'job_identifier': job_identifier})
     if config_name is not None:
         leo_path = "{}/.leo".format(os.path.expanduser("~"))
         config_parser.read(leo_path)
         try:
             options = config_parser.options(config_name)
             for option in options:
-                delete_arguments.update({option: config_parser.get(config_name, option)})
+                delete_arguments.update(
+                    {option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
 
         if job_identifier is None and 'job_identifier' not in delete_arguments:
             raise click.ClickException("No job identifier specified")
 
-    delete_arguments.update(parse_args({'session': config.session, 'job_identifier': job_identifier}))
+    delete_arguments.update(parse_args(
+        {'session': config.session, 'job_identifier': job_identifier}))
 
     try:
         log.debug('Delete arguments: {}'.format(delete_arguments))
@@ -167,29 +194,44 @@ def delete(config, job_identifier, config_name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
-              help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option(
+    '--bucket',
+    type=click.STRING,
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help="S3 bucket that has the CloudFormation templates.")
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
-              help='Prefix that is added on to the deployed stack names')
+@click.option(
+    '--job-identifier',
+    type=click.STRING,
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help='Prefix that is added on to the deployed stack names')
 @click.option('--parameters', cls=LiteralOption,
               help='All parameters that are needed to deploy with.')
-@click.option('--notification-arns', cls=LiteralOption,
-              help='All parameters that are needed to deploy with. '
-                   'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
-              help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-                   'and updating operations, and for the specified monitoring period afterwards.')
+@click.option(
+    '--notification-arns',
+    cls=LiteralOption,
+    help='All parameters that are needed to deploy with. '
+         'Can either be from a JSON file or typed JSON that must be in quotes')
+@click.option(
+    '--rollback-configuration',
+    cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
+         'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
-def deploy(config, bucket, prefix, gated, job_identifier, parameters, notification_arns, rollback_configuration, tags,
-           config_name):
+def deploy(config, bucket, prefix, gated, job_identifier,
+           parameters, notification_arns, rollback_configuration,
+           tags, config_name):
     """Creates or updates cloudformation stacks"""
     deploy_arguments = {}
 
@@ -200,9 +242,11 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
             options = config_parser.options(config_name)
             for option in options:
                 try:
-                    deploy_arguments.update({option: ast.literal_eval(config_parser.get(config_name, option))})
+                    deploy_arguments.update({option: ast.literal_eval(
+                        config_parser.get(config_name, option))})
                 except (ValueError, SyntaxError):
-                    deploy_arguments.update({option: config_parser.get(config_name, option)})
+                    deploy_arguments.update(
+                        {option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
 
@@ -215,10 +259,13 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
         raise click.ClickException("job-identifier does not have a value.")
 
     deploy_arguments.update(parse_args(
-        arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'gated': gated,
+        arguments={'session': config.session, 'bucket': bucket,
+                   'prefix': prefix, 'gated': gated,
                    'job_identifier': job_identifier,
-                   'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
+                   'parameters': parameters,
+                   'notification_arns': notification_arns,
+                   'rollback_configuration': rollback_configuration,
+                   'Tags': tags}))
     try:
         log.debug('Deploy arguments: {}'.format(deploy_arguments))
         exit(deploy_templates(**deploy_arguments))
@@ -228,14 +275,20 @@ def deploy(config, bucket, prefix, gated, job_identifier, parameters, notificati
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
+@click.option('--bucket', type=click.STRING, cls=NotRequiredIf,
+              not_required_if='config_name',
               help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
-@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf,
+              not_required_if='config_name',
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
-              help='All parameters that are needed to create an accurate plan.')
+@click.option(
+    '--parameters',
+    cls=LiteralOption,
+    help='All parameters that are needed to create an accurate plan.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
@@ -250,9 +303,11 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
             options = config_parser.options(config_name)
             for option in options:
                 try:
-                    plan_arguments.update({option: ast.literal_eval(config_parser.get(config_name, option))})
+                    plan_arguments.update({option: ast.literal_eval(
+                        config_parser.get(config_name, option))})
                 except (ValueError, SyntaxError):
-                    plan_arguments.update({option: config_parser.get(config_name, option)})
+                    plan_arguments.update(
+                        {option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
 
@@ -263,7 +318,8 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
         raise click.ClickException("job-identifier does not have a value.")
 
     plan_arguments.update(parse_args(
-        arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'job_identifier': job_identifier,
+        arguments={'session': config.session, 'bucket': bucket,
+                   'prefix': prefix, 'job_identifier': job_identifier,
                    'parameters': parameters}))
     try:
         log.debug("Plan arguments: {}".format(plan_arguments))
@@ -273,12 +329,23 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
-              help="S3 bucket that the CloudFormation templates will be uploaded to.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
-@click.option('--local-path', type=click.Path(exists=True), cls=NotRequiredIf, not_required_if='config_name',
-              help='Local path where CloudFormation templates are located.')
+@click.option(
+    '--bucket',
+    type=click.STRING,
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help="S3 bucket that the CloudFormation templates will be uploaded to.")
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
+@click.option(
+    '--local-path',
+    type=click.Path(
+        exists=True),
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help='Local path where CloudFormation templates are located.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
@@ -291,12 +358,18 @@ def upload(config, bucket, prefix, local_path, config_name):
         try:
             options = config_parser.options(config_name)
             for option in options:
-                upload_arguments.update({option: config_parser.get(config_name, option)})
+                upload_arguments.update(
+                    {option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
 
-    upload_arguments.update(parse_args(
-        arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix, 'local_path': local_path}))
+    upload_arguments.update(
+        parse_args(
+            arguments={
+                'session': config.session,
+                'bucket': bucket,
+                'prefix': prefix,
+                'local_path': local_path}))
 
     # Click defaults were overriding config values
     if bucket is None and 'bucket' not in upload_arguments:
@@ -313,10 +386,16 @@ def upload(config, bucket, prefix, local_path, config_name):
 
 
 @cli.command()
-@click.option('--bucket', type=click.STRING, cls=NotRequiredIf, not_required_if='config_name',
-              help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option(
+    '--bucket',
+    type=click.STRING,
+    cls=NotRequiredIf,
+    not_required_if='config_name',
+    help="S3 bucket that has the CloudFormation templates.")
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
@@ -329,12 +408,17 @@ def validate(config, bucket, prefix, config_name):
         try:
             options = config_parser.options(config_name)
             for option in options:
-                validate_arguments.update({option: config_parser.get(config_name, option)})
+                validate_arguments.update(
+                    {option: config_parser.get(config_name, option)})
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
 
     validate_arguments.update(
-        parse_args(arguments={'session': config.session, 'bucket': bucket, 'prefix': prefix}))
+        parse_args(
+            arguments={
+                'session': config.session,
+                'bucket': bucket,
+                'prefix': prefix}))
 
     if bucket is None and 'bucket' not in validate_arguments:
         raise click.ClickException("Bucket does not have a value.")
@@ -360,42 +444,67 @@ def validate(config, bucket, prefix, config_name):
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
 @click.option('--local-path', type=click.Path(),
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
-              help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption,
-              help='All parameters that are needed to deploy with. '
-                   'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
-              help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-                   'and updating operations, and for the specified monitoring period afterwards.')
+@click.option(
+    '--parameters',
+    cls=LiteralOption,
+    help='All parameters that are needed to create an accurate plan.')
+@click.option(
+    '--notification-arns',
+    cls=LiteralOption,
+    help='All parameters that are needed to deploy with. '
+         'Can either be from a JSON file or typed JSON that must be in quotes')
+@click.option(
+    '--rollback-configuration',
+    cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
+         'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks.')
 @pass_config
-def create_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
-                  rollback_configuration, tags):
+def create_config(
+        config,
+        config_name,
+        bucket,
+        prefix,
+        gated,
+        local_path,
+        job_identifier,
+        parameters,
+        notification_arns,
+        rollback_configuration,
+        tags):
     """Creates a configuration"""
     create_config_values = {}
 
-    create_config_values.update(parse_args(
-        arguments={'bucket': bucket, 'prefix': prefix, 'gated': gated, 'local_path': local_path,
-                   'job_identifier': job_identifier,
-                   'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
+    create_config_values.update(
+        parse_args(
+            arguments={
+                'bucket': bucket,
+                'prefix': prefix,
+                'gated': gated,
+                'local_path': local_path,
+                'job_identifier': job_identifier,
+                'parameters': parameters,
+                'notification_arns': notification_arns,
+                'rollback_configuration': rollback_configuration,
+                'Tags': tags}))
 
     leo_path = "{}/.leo".format(os.path.expanduser("~"))
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
         config_parser.add_section(config_name)
         for key, value in create_config_values.items():
-            if key is not 'config_name':
+            if key != 'config_name':
                 config_parser.set(config_name, key, str(value))
         config_parser.write(config_file)
 
@@ -406,41 +515,66 @@ def create_config(config, config_name, bucket, prefix, gated, local_path, job_id
               help="Name of the configuration.")
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
-@click.option('--prefix', type=click.STRING,
-              help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+@click.option(
+    '--prefix',
+    type=click.STRING,
+    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
 @click.option('--local-path', type=click.Path(exists=True),
               help='Local path where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING,
               help='Prefix that is used to identify stacks')
-@click.option('--parameters', cls=LiteralOption,
-              help='All parameters that are needed to create an accurate plan.')
-@click.option('--notification-arns', cls=LiteralOption,
-              help='All parameters that are needed to deploy with. '
-                   'Can either be from a JSON file or typed JSON that must be in quotes')
-@click.option('--rollback-configuration', cls=LiteralOption,
-              help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-                   'and updating operations, and for the specified monitoring period afterwards.')
+@click.option(
+    '--parameters',
+    cls=LiteralOption,
+    help='All parameters that are needed to create an accurate plan.')
+@click.option(
+    '--notification-arns',
+    cls=LiteralOption,
+    help='All parameters that are needed to deploy with. '
+         'Can either be from a JSON file or typed JSON that must be in quotes')
+@click.option(
+    '--rollback-configuration',
+    cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
+         'and updating operations, and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
-def edit_config(config, config_name, bucket, prefix, gated, local_path, job_identifier, parameters, notification_arns,
-                rollback_configuration, tags):
+def edit_config(
+        config,
+        config_name,
+        bucket,
+        prefix,
+        gated,
+        local_path,
+        job_identifier,
+        parameters,
+        notification_arns,
+        rollback_configuration,
+        tags):
     """Edits a configuration"""
     edit_config_values = {}
 
-    edit_config_values.update(parse_args(
-        arguments={'bucket': bucket, 'prefix': prefix, 'gated': gated, 'local_path': local_path,
-                   'job_identifier': job_identifier,
-                   'parameters': parameters, 'notification_arns': notification_arns,
-                   'rollback_configuration': rollback_configuration, 'Tags': tags}))
+    edit_config_values.update(
+        parse_args(
+            arguments={
+                'bucket': bucket,
+                'prefix': prefix,
+                'gated': gated,
+                'local_path': local_path,
+                'job_identifier': job_identifier,
+                'parameters': parameters,
+                'notification_arns': notification_arns,
+                'rollback_configuration': rollback_configuration,
+                'Tags': tags}))
 
     leo_path = "{}/.leo".format(os.path.expanduser("~"))
     config_parser.read(leo_path)  # preserves previously written sections
     with open(leo_path, 'w') as config_file:
         for key, value in edit_config_values.items():
-            if key is not 'config_name':
+            if key != 'config_name':
                 config_parser.set(config_name, key, str(value))
         config_parser.write(config_file)
 
@@ -459,7 +593,8 @@ def delete_config(config, config_name):
         with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
             config_parser.write(config_file)
     else:
-        raise click.BadParameter(param=config_name, message="No config specified")
+        raise click.BadParameter(
+            param=config_name, message="No config specified")
 
 
 # noinspection PyUnusedLocal
@@ -484,6 +619,7 @@ def list_configs(config, config_name):
             options = config_parser.options(config_name)
             click.echo("[{}]\n".format(config_name))
             for option in options:
-                click.echo("{} = {}".format(option, config_parser.get(config_name, option)))
+                click.echo("{} = {}".format(
+                    option, config_parser.get(config_name, option)))
         except configparser.NoSectionError:
             click.echo('No config called "{}" found'.format(config_name))
