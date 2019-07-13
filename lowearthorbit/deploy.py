@@ -6,10 +6,44 @@ from lowearthorbit.resources.update import update_stack
 log = logging.getLogger(__name__)
 
 
+def get_all_s3_objects(s3_cli, object_args, token, s3_objs):
+    s3_objects = s3_objs
+    if token is not None:
+        object_args.update({'ContinuationToken': token})
+    s3_objs = s3_cli.list_objects_v2(**object_args)
+    for s3_obj in s3_objs['Contents']:
+        s3_objects.append(s3_obj)
+    if 'NextContinuationToken' in s3_objs:
+        return get_all_s3_objects(
+            s3_cli=s3_cli,
+            object_args=object_args,
+            token=s3_objs['NextContinuationToken'],
+            s3_objs=s3_objects)
+
+    return s3_objects
+
+
+def get_all_stacks(cfn_cli, token, stacks):
+    stacks = stacks
+    describe_stacks_args = {}
+    if token is not None:
+        describe_stacks_args.update({'NextToken': token})
+    stacks = cfn_cli.describe_stacks(**describe_stacks_args)
+    for stack in stacks['Stacks']:
+        stacks.append(stack)
+    if 'NextToken' in stacks:
+        return get_all_stacks(
+            cfn_cli=cfn_cli,
+            token=stacks['NextToken'],
+            stacks=stacks)
+    return stacks
+
+
 def deploy_type(stack_name, cfn_client):
     """Checks if the CloudFormation stack should be created or updated"""
 
-    for stack in cfn_client.describe_stacks()['Stacks']:
+    stacks = get_all_stacks(cfn_cli=cfn_client, token=None, stacks=[])
+    for stack in stacks:
         try:
             if stack_name == stack['StackName']:
                 if stack['StackStatus'] in (
@@ -52,8 +86,13 @@ def deploy_templates(**kwargs):
     stack_archive = []
 
     stack_counter = 0
-    for s3_object in s3_client.list_objects_v2(
-            **objects_parameters)['Contents']:
+    s3_objects = get_all_s3_objects(
+        s3_cli=s3_client,
+        object_args=objects_parameters,
+        token=None,
+        s3_objs=[])
+
+    for s3_object in s3_objects:
         # Only lets through S3 objects with the names properly formatted for
         # LEO
         if s3_object['Key'].endswith(cfn_ext) and s3_object['Key'].split(

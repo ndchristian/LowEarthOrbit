@@ -1,6 +1,8 @@
 import botocore
 import click
 
+def
+
 
 def delete_stacks(**kwargs):
     """Deletes all stacks with the specified job-identifier"""
