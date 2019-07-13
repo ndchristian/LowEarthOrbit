@@ -10,7 +10,7 @@ setup(
     include_package_data=True,
     license='LICENSE.txt',
     description='A better way to deploy AWS CloudFormation',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     install_requires=['click',
                       'botocore',
                       'boto3'
