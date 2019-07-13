@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 
 def get_all_s3_objects(s3_cli, object_args, token, s3_objs):
+    """Gets all S3 objects in case not all results return from a single call"""
     s3_objects = s3_objs
     if token is not None:
         object_args.update({'ContinuationToken': token})
@@ -23,8 +24,9 @@ def get_all_s3_objects(s3_cli, object_args, token, s3_objs):
     return s3_objects
 
 
-def get_all_stacks(cfn_cli, token, stacks):
-    stacks = stacks
+def get_all_stacks(cfn_cli, token, stack_list):
+    """Gets all stacks in case not all results return from a single call"""
+    stack_list = stack_list
     describe_stacks_args = {}
     if token is not None:
         describe_stacks_args.update({'NextToken': token})
@@ -35,14 +37,14 @@ def get_all_stacks(cfn_cli, token, stacks):
         return get_all_stacks(
             cfn_cli=cfn_cli,
             token=stacks['NextToken'],
-            stacks=stacks)
+            stack_list=stack_list)
     return stacks
 
 
 def deploy_type(stack_name, cfn_client):
     """Checks if the CloudFormation stack should be created or updated"""
 
-    stacks = get_all_stacks(cfn_cli=cfn_client, token=None, stacks=[])
+    stacks = get_all_stacks(cfn_cli=cfn_client, token=None, stack_list=[])
     for stack in stacks:
         try:
             if stack_name == stack['StackName']:
@@ -115,7 +117,7 @@ def deploy_templates(**kwargs):
                         session=kwargs['session'],
                         deploy_parameters=deploy_parameters)
 
-                    if stack is not None:  # If there are no changes to the stack
+                    if stack is not None:  # If there are no changes
                         stack_archive.append({'StackName': stack['StackName']})
 
                     stack_counter += 1

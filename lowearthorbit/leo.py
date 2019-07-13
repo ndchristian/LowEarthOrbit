@@ -85,13 +85,15 @@ class NotRequiredIf(click.Option):
 
 
 def parse_args(arguments):
-    """Filters through the options and arguments and only passes those that have a value"""
+    """Filters through the options and arguments
+    and only passes those that have a value"""
     argument_parameters = {}
     for key, value in arguments.items():
         if value is not None:
             argument_parameters.update({key: value})
 
-    log.debug("Arguments after parse_args filter: {}".format(argument_parameters))
+    log.debug("Arguments after parse_args filter: {}".format(
+        argument_parameters))
 
     return argument_parameters
 
@@ -111,9 +113,9 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
     type=click.STRING,
     help='Use this Botocore session instead of creating a new default one')
 @click.option(
-    '--profile',
-    type=click.STRING,
-    help='The name of a profile to use. If not given, then the default profile is used')
+    '--profile', type=click.STRING,
+    help='The name of a profile to use. '
+         'If not given, then the default profile is used')
 @click.option('--region', type=click.STRING,
               help='Region when creating new connections')
 @click.option('--debug', is_flag=True,
@@ -143,7 +145,9 @@ def cli(
                     'aws_session_token': aws_session_token,
                     'botocore_session': botocore_session,
                     'profile_name': profile,
-                    'region_name': region}))
+                    'region_name': region
+                }
+            ))
 
         log.debug("Boto session arguments : {}".format(session_arguments))
         config.session = boto3.session.Session(**session_arguments)
@@ -201,9 +205,9 @@ def delete(config, job_identifier, config_name):
     not_required_if='config_name',
     help="S3 bucket that has the CloudFormation templates.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory '
+         'where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
 @click.option(
@@ -220,10 +224,10 @@ def delete(config, job_identifier, config_name):
     help='All parameters that are needed to deploy with. '
          'Can either be from a JSON file or typed JSON that must be in quotes')
 @click.option(
-    '--rollback-configuration',
-    cls=LiteralOption,
-    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-         'and updating operations, and for the specified monitoring period afterwards.')
+    '--rollback-configuration', cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor during '
+         'stack creation and updating operations,'
+         ' and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @click.option('--config-name', type=click.STRING,
@@ -279,9 +283,9 @@ def deploy(config, bucket, prefix, gated, job_identifier,
               not_required_if='config_name',
               help="S3 bucket that has the CloudFormation templates.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory '
+         'where CloudFormation templates are located.')
 @click.option('--job-identifier', type=click.STRING, cls=NotRequiredIf,
               not_required_if='config_name',
               help='Prefix that is used to identify stacks')
@@ -293,7 +297,8 @@ def deploy(config, bucket, prefix, gated, job_identifier,
               help="Name of the configuration.")
 @pass_config
 def plan(config, bucket, prefix, job_identifier, parameters, config_name):
-    """Attempts to provide information of how an update/creation of stacks might look like and how much it will cost"""
+    """Attempts to provide information of how an
+    update/creation of stacks might look like and how much it will cost"""
     plan_arguments = {}
 
     if config_name is not None:
@@ -336,9 +341,9 @@ def plan(config, bucket, prefix, job_identifier, parameters, config_name):
     not_required_if='config_name',
     help="S3 bucket that the CloudFormation templates will be uploaded to.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates will be uploaded to.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory '
+         'where CloudFormation templates will be uploaded to.')
 @click.option(
     '--local-path',
     type=click.Path(
@@ -393,9 +398,9 @@ def upload(config, bucket, prefix, local_path, config_name):
     not_required_if='config_name',
     help="S3 bucket that has the CloudFormation templates.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory where '
+         'CloudFormation templates are located.')
 @click.option('--config-name', type=click.STRING,
               help="Name of the configuration.")
 @pass_config
@@ -445,9 +450,9 @@ def validate(config, bucket, prefix, config_name):
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory '
+         'where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
 @click.option('--local-path', type=click.Path(),
@@ -464,10 +469,10 @@ def validate(config, bucket, prefix, config_name):
     help='All parameters that are needed to deploy with. '
          'Can either be from a JSON file or typed JSON that must be in quotes')
 @click.option(
-    '--rollback-configuration',
-    cls=LiteralOption,
-    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-         'and updating operations, and for the specified monitoring period afterwards.')
+    '--rollback-configuration', cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor during '
+         'stack creation and updating operations, '
+         'and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks.')
 @pass_config
@@ -497,7 +502,9 @@ def create_config(
                 'parameters': parameters,
                 'notification_arns': notification_arns,
                 'rollback_configuration': rollback_configuration,
-                'Tags': tags}))
+                'Tags': tags
+            }
+        ))
 
     leo_path = "{}/.leo".format(os.path.expanduser("~"))
     config_parser.read(leo_path)  # preserves previously written sections
@@ -516,9 +523,9 @@ def create_config(
 @click.option('--bucket', type=click.STRING,
               help="S3 bucket that has the CloudFormation templates.")
 @click.option(
-    '--prefix',
-    type=click.STRING,
-    help='Prefix or bucket subdirectory where CloudFormation templates are located.')
+    '--prefix', type=click.STRING,
+    help='Prefix or bucket subdirectory '
+         'where CloudFormation templates are located.')
 @click.option('--gated', type=click.BOOL,
               help='Checks with user before deploying an update')
 @click.option('--local-path', type=click.Path(exists=True),
@@ -535,10 +542,10 @@ def create_config(
     help='All parameters that are needed to deploy with. '
          'Can either be from a JSON file or typed JSON that must be in quotes')
 @click.option(
-    '--rollback-configuration',
-    cls=LiteralOption,
-    help='The rollback triggers for AWS CloudFormation to monitor during stack creation '
-         'and updating operations, and for the specified monitoring period afterwards.')
+    '--rollback-configuration', cls=LiteralOption,
+    help='The rollback triggers for AWS CloudFormation to monitor '
+         'during stack creation and updating operations, '
+         'and for the specified monitoring period afterwards.')
 @click.option('--tags', cls=LiteralOption,
               help='Tags added to all deployed stacks')
 @pass_config
@@ -590,7 +597,8 @@ def delete_config(config, config_name):
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
     if config_name is not None:
         config_parser.remove_section(config_name)
-        with open("{}/.leo".format(os.path.expanduser("~")), 'w') as config_file:
+        with open("{}/.leo".format(os.path.expanduser("~")),
+                  'w') as config_file:
             config_parser.write(config_file)
     else:
         raise click.BadParameter(
@@ -603,7 +611,8 @@ def delete_config(config, config_name):
               help="Name of the configuration.")
 @pass_config
 def list_configs(config, config_name):
-    """Lists all configurations or if the config_name is specified, the values of a configuration"""
+    """Lists all configurations or if the config_name is specified,
+    the values of a configuration"""
 
     config_parser.read("{}/.leo".format(os.path.expanduser("~")))
 

@@ -17,7 +17,11 @@ def add_absent_parameters(parameters, template_parameters):
     for stack_parameter in template_parameters:
         if stack_parameter['ParameterKey'] not in parameters_keys:
             parameters.append(
-                {'ParameterKey': stack_parameter['ParameterKey'], 'ParameterValue': None})
+                {
+                    'ParameterKey': stack_parameter['ParameterKey'],
+                    'ParameterValue': None
+                }
+            )
 
     return parameters
 

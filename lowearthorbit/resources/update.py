@@ -84,9 +84,12 @@ def update_stack(**kwargs):
         display_changes(changes=change_set_changes, change_set=True)
         # Acts as a filter on past resource failures
         past_failures = [
-            stack_event for stack_event in cfn_client.describe_stack_events(
-                StackName=stack_name)['StackEvents'] if stack_event['ResourceStatus'] in [
-                'CREATE_FAILED', 'UPDATE_FAILED']]
+            stack_event
+            for stack_event in cfn_client.describe_stack_events(
+                StackName=stack_name)['StackEvents']
+            if
+            stack_event['ResourceStatus'] in
+            ['CREATE_FAILED', 'UPDATE_FAILED']]
 
         if not gated:
             apply_changes(

@@ -10,8 +10,11 @@ def delete_stacks(**kwargs):
 
     cfn_client = session.client('cloudformation')
 
-    stack_names = sorted([stack['StackName'] for stack in cfn_client.describe_stacks()[
-        'Stacks'] if "{}-".format(job_identifier) in stack['StackName']])
+    stack_names = sorted([stack['StackName']
+                          for stack in cfn_client.describe_stacks()
+                          ['Stacks']
+                          if "{}-".format(job_identifier) in stack
+                          ['StackName']])
 
     choice = click.confirm(
         "Do you want to delete these stacks? : {}".format(stack_names))

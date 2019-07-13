@@ -50,7 +50,8 @@ def transform_template(
             TemplateURL=template_url,
             Parameters=stack_parameters,
             Capabilities=['CAPABILITY_IAM',
-                          'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
+                          'CAPABILITY_NAMED_IAM',
+                          'CAPABILITY_AUTO_EXPAND'],
             ChangeSetName=change_set_name,
             Description="Transformation details change set for {} created by Leo".format(
                 stack_name),
@@ -124,11 +125,12 @@ def display_status(cfn_client, current_stack, stack_name):
         return {'StackName': stack_name}
     except botocore.exceptions.WaiterError:
         click.echo("\n{} is currently rolling back.".format(stack_name))
-        resource_failures = [{'LogicalResourceId': event['LogicalResourceId'],
-                              'ResourceStatusReason': event['ResourceStatusReason']} for event in
-                             cfn_client.describe_stack_events(
-                                 StackName=current_stack['StackId'])['StackEvents']
-                             if event['ResourceStatus'] == 'CREATE_FAILED']
+        resource_failures = [
+            {'LogicalResourceId': event['LogicalResourceId'],
+             'ResourceStatusReason': event['ResourceStatusReason']}
+            for event in cfn_client.describe_stack_events(
+                StackName=current_stack['StackId'])['StackEvents']
+            if event['ResourceStatus'] == 'CREATE_FAILED']
 
         if resource_failures:
             for failures in resource_failures:
@@ -237,7 +239,8 @@ def create_stack(**kwargs):
                     click.echo("Deleting change set {}...".format(
                         transformed_stack['Id']))
                     cfn_client.delete_change_set(
-                        ChangeSetName=transformed_stack['Id'], StackName=stack_name)
+                        ChangeSetName=transformed_stack['Id'],
+                        StackName=stack_name)
                     # Check if still needed
                     change_set_delete_waiter(
                         change_set_id=transformed_stack['Id'],

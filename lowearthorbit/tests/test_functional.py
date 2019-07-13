@@ -17,7 +17,8 @@ class ResourceTesting(unittest.TestCase):
                                                          Params={'Bucket': self.bucket,
                                                                  'Key': self.key},
                                                          ExpiresIn=60)
-        self.template_details = self.cfn_client.get_template_summary(TemplateURL=self.url)
+        self.template_details = self.cfn_client.get_template_summary(
+            TemplateURL=self.url)
         self.job_identifier = ''
         self.parameters = []
         self.tags = []
@@ -28,9 +29,9 @@ class ResourceTesting(unittest.TestCase):
 
     def test_deploy(self):
         deploy_cmd = "leo deploy --bucket %s --job-identifier %s --gated %s --parameters '%s'" % (
-        self.bucket, self.job_identifier, self.gated, self.parameters)
+            self.bucket, self.job_identifier, self.gated, self.parameters)
 
-        deploy_run = subprocess.run(deploy_cmd.split(),capture_output = True)
+        deploy_run = subprocess.run(deploy_cmd.split(), capture_output=True)
 
         with self.assertRaises():
             print(deploy_run)

@@ -26,8 +26,7 @@ def create_plan(
         session=session,
         key_object=s3_object_key,
         parameters=parameters,
-        bucket=bucket,
-        job_identifier=job_identifier)
+        bucket=bucket)
     try:
         cost_url = cfn_client.estimate_template_cost(
             TemplateURL=template_url, Parameters=stack_parameters)['Url']
@@ -60,8 +59,7 @@ def update_plan(
     stack_parameters = gather(session=session,
                               key_object=s3_object_key,
                               parameters=parameters,
-                              bucket=bucket,
-                              job_identifier=job_identifier)
+                              bucket=bucket)
 
     try:
         change_set = cfn_client.create_change_set(
